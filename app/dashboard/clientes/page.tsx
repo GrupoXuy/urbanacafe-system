@@ -1,4 +1,66 @@
 "use client";
 import {useEffect,useState} from "react";
 import {createClient} from "@/lib/supabase-browser";
-export default function Clientes(){const [items,setItems]=useState<any[]>([]);useEffect(()=>{async function load(){const c=createClient();const {data:{user}}=await c.auth.getUser();if(!user)return;const {data:m}=await c.from("business_memberships").select("business_id").eq("user_id",user.id).eq("active",true).limit(1).maybeSingle();if(m){const {data}=await c.from("customers").select("id,name,phone,email,created_at").eq("business_id",m.business_id).eq("active",true).order("name");setItems(data||[])}}load()},[]);return <div className="main"><h1 className="title">Clientes</h1><p className="subtitle">Base de relacionamento do Urbana Café</p><div className="section"><table className="table"><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Cadastro</th></tr></thead><tbody>{items.map(x=><tr key={x.id}><td>{x.name}</td><td>{x.phone||"—"}</td><td>{x.email||"—"}</td><td>{new Date(x.created_at).toLocaleDateString("pt-BR")}</td></tr>)}</tbody></table></div></div>
+
+export default function Clientes(){
+  const [items,setItems]=useState<any[]>([]);
+
+  useEffect(()=>{
+    async function load(){
+      const c=createClient();
+      const {data:{user}}=await c.auth.getUser();
+      if(!user)return;
+
+      const {data:m}=await c
+        .from("business_memberships")
+        .select("business_id")
+        .eq("user_id",user.id)
+        .eq("active",true)
+        .limit(1)
+        .maybeSingle();
+
+      if(!m)return;
+
+      const {data}=await c
+        .from("customers")
+        .select("id,name,phone,email,created_at")
+        .eq("business_id",m.business_id)
+        .eq("active",true)
+        .order("name");
+
+      setItems(data||[]);
+    }
+
+    load();
+  },[]);
+
+  return (
+    <div className="main">
+      <h1 className="title">Clientes</h1>
+      <p className="subtitle">Base de relacionamento do Urbana Café</p>
+
+      <div className="section">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th>Cadastro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map(x=>(
+              <tr key={x.id}>
+                <td>{x.name}</td>
+                <td>{x.phone||"—"}</td>
+                <td>{x.email||"—"}</td>
+                <td>{new Date(x.created_at).toLocaleDateString("pt-BR")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
