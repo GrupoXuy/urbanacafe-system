@@ -16,6 +16,16 @@ type Row={
   refunds_count:number;
 };
 
+type PaymentRow={
+  report_date:string;
+  method:string;
+  gross_amount:number;
+  refunded_amount:number;
+  net_amount:number;
+  transactions:number;
+  refunds_count:number;
+};
+
 type CashRow={
   cash_session_id:string;
   opened_at:string;
@@ -34,6 +44,10 @@ type CashRow={
   movement_count:number;
 };
 
+const methodLabel:Record<string,string>={
+  cash:"Dinheiro",debit:"Débito",credit:"Crédito",transfer:"Transferência",mercado_pago:"Mercado Pago",other:"Outro"
+};
+
 const pad=(n:number)=>String(n).padStart(2,"0");
 function monthStart(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-01"}
 function today(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
@@ -43,6 +57,7 @@ export default function Relatorios(){
   const [end,setEnd]=useState(today());
   const [rows,setRows]=useState<Row[]>([]);
   const [cashRows,setCashRows]=useState<CashRow[]>([]);
+  const [paymentRows,setPaymentRows]=useState<PaymentRow[]>([]);
   const [loading,setLoading]=useState(true);
   const [message,setMessage]=useState("");
 
@@ -65,7 +80,7 @@ export default function Relatorios(){
       return;
     }
 
-    const [{data:daily,error:dailyError},{data:cash,error:cashError}]=await Promise.all([
+    const [{data:daily,error:dailyError},{data:cash,error:cashError},{data:payments,error:paymentError}]=await Promise.all([
       c.from("business_financial_daily")
         .select("report_date,revenue,cogs,expenses,cash_in,cash_out,gross_profit,net_profit,sales_count,refunds_count")
         .eq("business_id",m.business_id)
@@ -76,12 +91,19 @@ export default function Relatorios(){
         .select("cash_session_id,opened_at,closed_at,status,opening_amount,calculated_expected,counted_amount,calculated_difference,cash_sales,cash_refunds,cash_expenses,deposits,withdrawals,adjustments,movement_count")
         .eq("business_id",m.business_id)
         .order("opened_at",{ascending:false})
-        .limit(30)
+        .limit(30),
+      c.from("business_payment_daily")
+        .select("report_date,method,gross_amount,refunded_amount,net_amount,transactions,refunds_count")
+        .eq("business_id",m.business_id)
+        .gte("report_date",start)
+        .lte("report_date",end)
+        .order("report_date",{ascending:false})
     ]);
 
-    if(dailyError||cashError)setMessage(dailyError?.message||cashError?.message||"Não foi possível carregar a reconciliação");
+    if(dailyError||cashError||paymentError)setMessage(dailyError?.message||cashError?.message||paymentError?.message||"Não foi possível carregar a reconciliação");
     setRows((daily||[]) as Row[]);
     setCashRows((cash||[]) as CashRow[]);
+    setPaymentRows((payments||[]) as PaymentRow[]);
     setLoading(false);
   }
 
@@ -156,6 +178,25 @@ export default function Relatorios(){
       </table>}
     </div>
 
+
+    <div className="section">
+      <h2>Reconciliação por meio de pagamento</h2>
+      {loading?<div className="card">Carregando pagamentos...</div>:
+      <div className="card" style={{overflowX:"auto"}}>
+        <table className="table">
+          <thead><tr><th>Data</th><th>Meio</th><th>Bruto</th><th>Estornos</th><th>Líquido</th><th>Vendas</th><th>Estornos</th></tr></thead>
+          <tbody>{paymentRows.length?paymentRows.map((r,index)=><tr key={r.report_date+"-"+r.method+"-"+index}>
+            <td>{new Date(r.report_date+"T12:00:00").toLocaleDateString("pt-BR")}</td>
+            <td>{methodLabel[r.method]||r.method}</td>
+            <td>UYU {Number(r.gross_amount).toFixed(2)}</td>
+            <td>UYU {Number(r.refunded_amount).toFixed(2)}</td>
+            <td>UYU {Number(r.net_amount).toFixed(2)}</td>
+            <td>{r.transactions}</td>
+            <td>{r.refunds_count}</td>
+          </tr>):<tr><td colSpan={7}>Nenhum pagamento no período.</td></tr>}</tbody>
+        </table>
+      </div>}
+    </div>
     <div className="section">
       <div className="topbar" style={{padding:0}}>
         <div><h2>Reconciliação de caixa</h2><p className="subtitle">{openSessions.length} caixa(s) aberto(s) · {closedDifferences.length} fechamento(s) com diferença</p></div>
