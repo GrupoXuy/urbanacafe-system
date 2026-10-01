@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -20,7 +20,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.14.0
-          cache: npm
+
+      - name: Bootstrap lockfile
+        if: hashFiles('package-lock.json') == ''
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          test -s package-lock.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f package-lock.json
+          git commit -m "chore: add package-lock"
+          git push
 
       - name: Install
         run: npm install
