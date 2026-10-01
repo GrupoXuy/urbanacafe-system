@@ -4,7 +4,7 @@ import Link from "next/link";
 import {createClient} from "@/lib/supabase-browser";
 
 type Product={id:string;name:string;unit:string;is_stock_item:boolean;active:boolean};
-type RecipeItem={id:string;ingredient_product_id:string;quantity:number};
+type RecipeItem={id:string;recipe_id:string;ingredient_product_id:string;quantity:number};
 type Recipe={id:string;product_id:string;yield_quantity:number;active:boolean};
 
 export default function Receitas(){
@@ -35,7 +35,7 @@ export default function Receitas(){
     ]);
     setProducts((p||[]) as Product[]);
     setRecipes((r||[]) as Recipe[]);
-    setItems((i||[]) as (RecipeItem&{recipe_id:string})[]);
+    setItems((i||[]) as RecipeItem[]);
   }
 
   useEffect(()=>{load()},[]);
