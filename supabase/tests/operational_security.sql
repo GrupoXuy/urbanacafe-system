@@ -1,9 +1,10 @@
 -- Urbana Café RPC/RLS smoke test.
 -- Run in a Supabase SQL session with sufficient privileges.
 -- All fixtures are rolled back at the end.
+
 begin;
 
-do $$
+do $main_test$
 declare
   v_user uuid;
   v_business uuid;
@@ -125,12 +126,13 @@ begin
     raise exception 'TEST FAILED: close expected 110, got %',v_expected;
   end if;
 end;
-$$;
+$main_test$;
 
 rollback;
 
--- Atomic purchase + transactional write restrictions.
-do $
+begin;
+
+do $purchase_test$
 declare
   v_user uuid;
   v_business uuid;
@@ -188,7 +190,8 @@ begin
     true
   );
 
-  select id into v_session from public.open_cash_session(v_business,100);
+  select id into v_session
+  from public.open_cash_session(v_business,100);
 
   begin
     insert into public.purchases(business_id,status,payment_method,total,created_by)
@@ -227,7 +230,8 @@ begin
   end if;
 
   select round(coalesce(sum(amount),0),2) into v_cash
-  from public.cash_movements where cash_session_id=v_session;
+  from public.cash_movements
+  where cash_session_id=v_session;
 
   if v_cash<>30 then
     raise exception 'TEST FAILED: cash expected 30 after opening 100 and cash purchase -70, got %',v_cash;
@@ -245,6 +249,8 @@ begin
     if sqlerrm like 'TEST FAILED:%' then raise; end if;
   end;
 end;
-$;
+$purchase_test$;
+
+rollback;
 
 select 'Urbana Café RPC/RLS smoke test: PASS' as result;
