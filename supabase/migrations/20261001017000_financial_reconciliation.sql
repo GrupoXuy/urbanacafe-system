@@ -11,7 +11,7 @@ with completed_sales as (
     sum(cogs)::numeric(14,2) as cogs,
     count(*)::bigint as sales_count
   from public.sales
-  where status='completed'
+  where status in ('completed','refunded')
     and completed_at is not null
   group by business_id,completed_at::date
 ),
