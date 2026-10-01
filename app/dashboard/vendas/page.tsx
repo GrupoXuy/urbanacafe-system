@@ -4,7 +4,7 @@ import Link from "next/link";
 import {createClient} from "@/lib/supabase-browser";
 
 type Payment={method:string;amount:number};
-type Sale={id:string;created_at:string;total:number;status:"open"|"completed"|"cancelled"|"refunded";notes:string|null;customers?:{name:string}|null;sale_payments?:Payment[]};
+type Sale={id:string;created_at:string;total:number;status:"open"|"completed"|"cancelled"|"refunded";notes:string|null;customers?:{name:string}[];sale_payments?:Payment[]};
 
 const methodLabel:Record<string,string>={
   cash:"Dinheiro",debit:"Débito",credit:"Crédito",transfer:"Transferência",mercado_pago:"Mercado Pago",other:"Outro"
@@ -82,7 +82,7 @@ export default function Vendas(){
               const payment=sale.sale_payments?.[0];
               return <tr key={sale.id}>
                 <td>{new Date(sale.created_at).toLocaleString("pt-BR")}</td>
-                <td>{sale.customers?.name||"Consumidor final"}</td>
+                <td>{sale.customers?.[0]?.name||"Consumidor final"}</td>
                 <td>UYU {Number(sale.total).toFixed(2)}</td>
                 <td>{payment?methodLabel[payment.method]||payment.method:"—"}</td>
                 <td>{sale.status==="completed"?"Concluída":sale.status==="refunded"?"Estornada":"Cancelada"}</td>
