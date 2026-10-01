@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
+import Link from "next/link";
 import {createClient} from "@/lib/supabase-browser";
 
 type Product={id:string;name:string;unit:string;average_cost:number};
@@ -46,7 +47,11 @@ export default function Compras(){
    else{setMessage("Compra lançada: estoque e custo médio atualizados.");setLines([]);setInvoice("");load()}
    setSaving(false);
  }
- return <div className="main"><h1 className="title">Compras</h1><p className="subtitle">Entrada de estoque, fornecedor e custo médio ponderado</p>
+ return <div className="main">
+  <div className="topbar">
+   <div><h1 className="title">Compras</h1><p className="subtitle">Entrada de estoque, fornecedor e custo médio ponderado</p></div>
+   <Link href="/dashboard/fornecedores" className="btn" style={{width:"auto",textDecoration:"none"}}>Fornecedores</Link>
+  </div>
  <div className="card section"><h2>Nova compra</h2>
    <div className="grid" style={{gridTemplateColumns:"repeat(4,minmax(0,1fr))"}}>
      <label className="field"><span>Fornecedor</span><select value={supplier} onChange={e=>setSupplier(e.target.value)}><option value="">Sem fornecedor</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
