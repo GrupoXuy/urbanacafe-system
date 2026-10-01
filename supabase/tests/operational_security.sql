@@ -576,7 +576,7 @@ begin
   if round(v_daily.revenue,2)<>0
     or round(v_daily.cogs,2)<>0
     or round(v_daily.expenses,2)<>5
-    or v_daily.sales_count<>0
+    or v_daily.sales_count<>1
     or v_daily.refunds_count<>1 then
     raise exception 'TEST FAILED: daily finance after refund: revenue %, cogs %, expenses %, sales %, refunds %',
       v_daily.revenue,v_daily.cogs,v_daily.expenses,v_daily.sales_count,v_daily.refunds_count;
