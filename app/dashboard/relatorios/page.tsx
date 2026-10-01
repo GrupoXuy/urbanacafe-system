@@ -293,7 +293,7 @@ export default function Relatorios(){
         ["Abaixo do mínimo",String(inventoryTotals.lowStock)],
         ["Sem estoque",String(inventoryTotals.outOfStock)],
         ["Perdas / ajustes negativos",money(losses.value)],
-        ["Ajuste líquido",inventoryTotals.itemCount+" itens · "+Number(netAdjustments.quantity||0).toFixed(3)+" "+(inventoryRows[0]?.unit||"un")]
+        ["Ajuste líquido",money(netAdjustments.value)]
       ].map(([label,value])=><div className="card" key={label}><div className="label">{label}</div><div className="value">{value}</div></div>)}</div>
     </div>
 
