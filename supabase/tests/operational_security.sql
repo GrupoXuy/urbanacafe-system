@@ -254,3 +254,136 @@ $purchase_test$;
 rollback;
 
 select 'Urbana Café RPC/RLS smoke test: PASS' as result;
+
+
+begin;
+
+do $recipe_test$
+declare
+  v_user uuid;
+  v_business uuid;
+  v_other_business uuid;
+  v_finished uuid;
+  v_ingredient uuid;
+  v_other_ingredient uuid;
+  v_session uuid;
+  v_recipe public.recipes%rowtype;
+  v_sale public.sales%rowtype;
+  v_stock numeric;
+  v_cogs numeric;
+begin
+  select m.user_id into v_user
+  from public.business_memberships m
+  where m.role='owner' and m.active
+  order by m.created_at
+  limit 1;
+
+  if v_user is null then
+    raise exception 'TEST FAILED: no active owner fixture user for recipe';
+  end if;
+
+  insert into public.businesses(name,legal_name)
+  values('TEST Recipe Atomic','TEST Recipe Atomic')
+  returning id into v_business;
+
+  insert into public.businesses(name,legal_name)
+  values('TEST Recipe Other','TEST Recipe Other')
+  returning id into v_other_business;
+
+  insert into public.business_memberships(business_id,user_id,role,active)
+  values(v_business,v_user,'owner',true);
+
+  insert into public.products(
+    business_id,name,unit,sale_price,average_cost,stock_quantity,min_stock,is_stock_item,is_sellable,active
+  )
+  values(v_business,'TEST Latte','UN',15,0,0,0,false,true,true)
+  returning id into v_finished;
+
+  insert into public.products(
+    business_id,name,unit,sale_price,average_cost,stock_quantity,min_stock,is_stock_item,is_sellable,active
+  )
+  values(v_business,'TEST Milk','ML',0,3,20,0,true,false,true)
+  returning id into v_ingredient;
+
+  insert into public.products(
+    business_id,name,unit,sale_price,average_cost,stock_quantity,min_stock,is_stock_item,is_sellable,active
+  )
+  values(v_other_business,'TEST Foreign Ingredient','ML',0,1,20,0,true,false,true)
+  returning id into v_other_ingredient;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub',v_user::text,'role','authenticated')::text,
+    true
+  );
+
+  select * into v_recipe
+  from public.save_recipe_transaction(
+    v_business,
+    null,
+    v_finished,
+    2,
+    jsonb_build_array(
+      jsonb_build_object(
+        'ingredient_product_id',v_ingredient,
+        'quantity',5
+      )
+    )
+  );
+
+  if v_recipe.product_id<>v_finished or round(v_recipe.yield_quantity,3)<>2 then
+    raise exception 'TEST FAILED: recipe header invalid';
+  end if;
+
+  select id into v_session from public.open_cash_session(v_business,0);
+
+  select * into v_sale
+  from public.create_sale_transaction(
+    v_business,v_session,null,null,'Teste receita POS','cash',
+    jsonb_build_array(jsonb_build_object('product_id',v_finished,'quantity',2)),0
+  );
+
+  if v_sale.status<>'completed' or round(v_sale.total,2)<>30 then
+    raise exception 'TEST FAILED: recipe sale invalid: % / %',v_sale.status,v_sale.total;
+  end if;
+
+  select stock_quantity into v_stock
+  from public.products
+  where id=v_ingredient;
+
+  if round(v_stock,3)<>15 then
+    raise exception 'TEST FAILED: ingredient stock expected 15 after recipe sale, got %',v_stock;
+  end if;
+
+  select cogs into v_cogs
+  from public.sales
+  where id=v_sale.id;
+
+  if round(v_cogs,2)<>15 then
+    raise exception 'TEST FAILED: recipe COGS expected 15, got %',v_cogs;
+  end if;
+
+  begin
+    perform public.save_recipe_transaction(
+      v_business,
+      null,
+      v_finished,
+      1,
+      jsonb_build_array(
+        jsonb_build_object(
+          'ingredient_product_id',v_other_ingredient,
+          'quantity',1
+        )
+      )
+    );
+    raise exception 'TEST FAILED: cross-tenant recipe unexpectedly succeeded';
+  exception when others then
+    if sqlerrm like 'TEST FAILED:%' then raise; end if;
+  end;
+end;
+$recipe_test$;
+
+rollback;
+
+select 'Urbana Café RPC/RLS smoke test: PASS' as result;

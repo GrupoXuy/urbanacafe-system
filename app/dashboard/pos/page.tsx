@@ -129,6 +129,7 @@ export default function POS(){
         <Link href="/dashboard/caixa">Caixa</Link>
         <Link href="/dashboard/estoque">Estoque</Link>
         <Link href="/dashboard/produtos">Produtos</Link>
+        <Link href="/dashboard/receitas">Fichas técnicas</Link>
         <Link href="/dashboard/compras">Compras</Link>
         <Link href="/dashboard/despesas">Despesas</Link>
         <Link href="/dashboard/clientes">Clientes</Link>
