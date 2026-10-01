@@ -57,6 +57,7 @@ export default function Relatorios(){
   const [end,setEnd]=useState(today());
   const [rows,setRows]=useState<Row[]>([]);
   const [cashRows,setCashRows]=useState<CashRow[]>([]);
+  const [paymentRows,setPaymentRows]=useState<PaymentRow[]>([]);
   const [loading,setLoading]=useState(true);
   const [message,setMessage]=useState("");
 
