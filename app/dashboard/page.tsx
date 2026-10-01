@@ -4,7 +4,7 @@ import Link from "next/link";
 import {createClient} from "@/lib/supabase-browser";
 
 const links=[
-  ["Dashboard","/dashboard"],["Vendas / POS","/dashboard/pos"],["Caixa","/dashboard/caixa"],["Estoque","/dashboard/estoque"],
+  ["Dashboard","/dashboard"],["Vendas / POS","/dashboard/pos"],["Histórico de vendas","/dashboard/vendas"],["Caixa","/dashboard/caixa"],["Estoque","/dashboard/estoque"],
   ["Produtos","/dashboard/produtos"],["Fichas técnicas","/dashboard/receitas"],["Compras","/dashboard/compras"],["Fornecedores","/dashboard/fornecedores"],["Despesas","/dashboard/despesas"],["Clientes","/dashboard/clientes"],
   ["Mesas","/dashboard/mesas"],["Reservas","/dashboard/reservas"],["Relatórios","/dashboard/relatorios"],["Funcionários","/dashboard/funcionarios"]
 ];
@@ -58,6 +58,7 @@ export default function Dashboard(){
           <tbody>
             {[
               ["POS","Operacional","/dashboard/pos","Abrir vendas"],
+              ["Histórico de vendas","Operacional","/dashboard/vendas","Consultar e estornar vendas"],
               ["Caixa","Operacional","/dashboard/caixa","Gerenciar caixa"],
               ["Estoque","Operacional","/dashboard/estoque","Consultar estoque"],
               ["Produtos","Operacional","/dashboard/produtos","Gerenciar produtos"],

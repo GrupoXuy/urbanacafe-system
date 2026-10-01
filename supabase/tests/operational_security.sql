@@ -387,3 +387,110 @@ $recipe_test$;
 rollback;
 
 select 'Urbana Café RPC/RLS smoke test: PASS' as result;
+
+
+begin;
+
+do $refund_test$
+declare
+  v_user uuid;
+  v_business uuid;
+  v_product uuid;
+  v_session uuid;
+  v_sale public.sales%rowtype;
+  v_stock numeric;
+  v_cash numeric;
+  v_refund_count integer;
+begin
+  select user_id into v_user
+  from public.business_memberships
+  where role='owner' and active
+  order by created_at
+  limit 1;
+
+  if v_user is null then
+    raise exception 'TEST FAILED: no active owner fixture user for refund';
+  end if;
+
+  insert into public.businesses(name,legal_name)
+  values('TEST Sale Refund','TEST Sale Refund')
+  returning id into v_business;
+
+  insert into public.business_memberships(business_id,user_id,role,active)
+  values(v_business,v_user,'owner',true);
+
+  insert into public.products(
+    business_id,name,unit,sale_price,average_cost,stock_quantity,min_stock,is_stock_item,is_sellable,active
+  )
+  values(v_business,'TEST Refund Product','UN',10,2,10,0,true,true,true)
+  returning id into v_product;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub',v_user::text,'role','authenticated')::text,
+    true
+  );
+
+  select id into v_session from public.open_cash_session(v_business,100);
+
+  select * into v_sale
+  from public.create_sale_transaction(
+    v_business,v_session,null,null,'TEST refund','cash',
+    jsonb_build_array(jsonb_build_object('product_id',v_product,'quantity',2)),0
+  );
+
+  select stock_quantity into v_stock from public.products where id=v_product;
+  if round(v_stock,3)<>8 then
+    raise exception 'TEST FAILED: stock before refund expected 8, got %',v_stock;
+  end if;
+
+  select round(coalesce(sum(amount),0),2) into v_cash
+  from public.cash_movements
+  where cash_session_id=v_session;
+
+  if v_cash<>120 then
+    raise exception 'TEST FAILED: cash before refund expected 120, got %',v_cash;
+  end if;
+
+  select * into v_sale
+  from public.refund_sale_transaction(v_sale.id,'Cliente solicitou devolução');
+
+  if v_sale.status<>'refunded' then
+    raise exception 'TEST FAILED: status after refund expected refunded, got %',v_sale.status;
+  end if;
+
+  select stock_quantity into v_stock from public.products where id=v_product;
+  if round(v_stock,3)<>10 then
+    raise exception 'TEST FAILED: stock after refund expected 10, got %',v_stock;
+  end if;
+
+  select round(coalesce(sum(amount),0),2) into v_cash
+  from public.cash_movements
+  where cash_session_id=v_session;
+
+  if v_cash<>100 then
+    raise exception 'TEST FAILED: cash after refund expected 100, got %',v_cash;
+  end if;
+
+  select count(*) into v_refund_count
+  from public.stock_movements
+  where reference_id=v_sale.id
+    and movement_type='adjustment';
+
+  if v_refund_count<>1 then
+    raise exception 'TEST FAILED: compensating stock movement missing';
+  end if;
+
+  begin
+    perform public.refund_sale_transaction(v_sale.id,'Segundo estorno');
+    raise exception 'TEST FAILED: sale was refunded twice';
+  exception when others then
+    if sqlerrm like 'TEST FAILED:%' then raise; end if;
+  end;
+end;
+$refund_test$;
+
+rollback;
+
+select 'Urbana Café sale refund test: PASS' as result;
