@@ -613,3 +613,100 @@ $finance_test$;
 rollback;
 
 select 'Urbana Café financial reconciliation test: PASS' as result;
+
+
+begin;
+
+do $payment_refund_test$
+declare
+  v_user uuid;
+  v_business uuid;
+  v_product uuid;
+  v_session uuid;
+  v_sale public.sales%rowtype;
+  v_cash_before numeric;
+  v_cash_after numeric;
+  v_refund_amount numeric;
+  v_refund_count integer;
+begin
+  select user_id into v_user
+  from public.business_memberships
+  where role='owner' and active
+  order by created_at
+  limit 1;
+
+  if v_user is null then
+    raise exception 'TEST FAILED: no active owner fixture user for payment refund';
+  end if;
+
+  insert into public.businesses(name,legal_name)
+  values('TEST Card Refund','TEST Card Refund')
+  returning id into v_business;
+
+  insert into public.business_memberships(business_id,user_id,role,active)
+  values(v_business,v_user,'owner',true);
+
+  insert into public.products(
+    business_id,name,unit,sale_price,average_cost,stock_quantity,
+    min_stock,is_stock_item,is_sellable,active
+  )
+  values(v_business,'TEST Card Product','UN',10,2,10,0,true,true,true)
+  returning id into v_product;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub',v_user::text,'role','authenticated')::text,
+    true
+  );
+
+  select id into v_session
+  from public.open_cash_session(v_business,100);
+
+  select round(coalesce(sum(amount),0),2)
+  into v_cash_before
+  from public.cash_movements
+  where cash_session_id=v_session;
+
+  select * into v_sale
+  from public.create_sale_transaction(
+    v_business,v_session,null,null,'Card refund test','credit',
+    jsonb_build_array(jsonb_build_object('product_id',v_product,'quantity',2)),0
+  );
+
+  select round(coalesce(sum(amount),0),2)
+  into v_cash_after
+  from public.cash_movements
+  where cash_session_id=v_session;
+
+  if v_cash_after<>v_cash_before then
+    raise exception 'TEST FAILED: non-cash sale altered cash';
+  end if;
+
+  select * into v_sale
+  from public.refund_sale_transaction(v_sale.id,'Credit card refund');
+
+  select round(coalesce(sum(amount),0),2)
+  into v_cash_after
+  from public.cash_movements
+  where cash_session_id=v_session;
+
+  if v_cash_after<>v_cash_before then
+    raise exception 'TEST FAILED: non-cash refund altered cash';
+  end if;
+
+  select round(coalesce(sum(amount),0),2),count(*)
+  into v_refund_amount,v_refund_count
+  from public.sale_refund_payments
+  where sale_id=v_sale.id;
+
+  if v_refund_amount<>20 or v_refund_count<>1 then
+    raise exception 'TEST FAILED: payment refund ledger expected 20 / 1, got % / %',
+      v_refund_amount,v_refund_count;
+  end if;
+end;
+$payment_refund_test$;
+
+rollback;
+
+select 'Urbana Café payment refund reconciliation test: PASS' as result;
