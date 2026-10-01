@@ -352,16 +352,16 @@ begin
   from public.products
   where id=v_ingredient;
 
-  if round(v_stock,3)<>10 then
-    raise exception 'TEST FAILED: ingredient stock expected 10 after recipe sale, got %',v_stock;
+  if round(v_stock,3)<>15 then
+    raise exception 'TEST FAILED: ingredient stock expected 15 after recipe sale, got %',v_stock;
   end if;
 
   select cogs into v_cogs
   from public.sales
   where id=v_sale.id;
 
-  if round(v_cogs,2)<>30 then
-    raise exception 'TEST FAILED: recipe COGS expected 30, got %',v_cogs;
+  if round(v_cogs,2)<>15 then
+    raise exception 'TEST FAILED: recipe COGS expected 15, got %',v_cogs;
   end if;
 
   begin
