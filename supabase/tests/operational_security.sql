@@ -494,3 +494,122 @@ $refund_test$;
 rollback;
 
 select 'Urbana Café sale refund test: PASS' as result;
+
+
+begin;
+
+do $finance_test$
+declare
+  v_user uuid;
+  v_business uuid;
+  v_product uuid;
+  v_session uuid;
+  v_sale public.sales%rowtype;
+  v_daily record;
+  v_cash record;
+begin
+  select user_id into v_user
+  from public.business_memberships
+  where role='owner' and active
+  order by created_at
+  limit 1;
+
+  if v_user is null then
+    raise exception 'TEST FAILED: no active owner fixture user for finance';
+  end if;
+
+  insert into public.businesses(name,legal_name)
+  values('TEST Finance Reconciliation','TEST Finance Reconciliation')
+  returning id into v_business;
+
+  insert into public.business_memberships(business_id,user_id,role,active)
+  values(v_business,v_user,'owner',true);
+
+  insert into public.products(
+    business_id,name,unit,sale_price,average_cost,stock_quantity,min_stock,is_stock_item,is_sellable,active
+  )
+  values(v_business,'TEST Finance Product','UN',10,2,10,0,true,true,true)
+  returning id into v_product;
+
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub',v_user::text,'role','authenticated')::text,
+    true
+  );
+
+  select id into v_session
+  from public.open_cash_session(v_business,100);
+
+  select * into v_sale
+  from public.create_sale_transaction(
+    v_business,v_session,null,null,'Finance report test','cash',
+    jsonb_build_array(jsonb_build_object('product_id',v_product,'quantity',2)),0
+  );
+
+  perform public.record_expense(
+    v_business,'TEST Finance Expense','Teste',5,current_date,'cash'
+  );
+
+  select * into v_daily
+  from public.business_financial_daily
+  where business_id=v_business
+    and report_date=current_date;
+
+  if round(v_daily.revenue,2)<>20
+    or round(v_daily.cogs,2)<>4
+    or round(v_daily.expenses,2)<>5
+    or round(v_daily.gross_profit,2)<>16
+    or round(v_daily.net_profit,2)<>11 then
+    raise exception 'TEST FAILED: daily finance before refund: revenue %, cogs %, expenses %, gross %, net %',
+      v_daily.revenue,v_daily.cogs,v_daily.expenses,v_daily.gross_profit,v_daily.net_profit;
+  end if;
+
+  select * into v_sale
+  from public.refund_sale_transaction(v_sale.id,'Finance refund test');
+
+  select * into v_daily
+  from public.business_financial_daily
+  where business_id=v_business
+    and report_date=current_date;
+
+  if round(v_daily.revenue,2)<>0
+    or round(v_daily.cogs,2)<>0
+    or round(v_daily.expenses,2)<>5
+    or v_daily.sales_count<>0
+    or v_daily.refunds_count<>1 then
+    raise exception 'TEST FAILED: daily finance after refund: revenue %, cogs %, expenses %, sales %, refunds %',
+      v_daily.revenue,v_daily.cogs,v_daily.expenses,v_daily.sales_count,v_daily.refunds_count;
+  end if;
+
+  select * into v_cash
+  from public.business_cash_reconciliation
+  where cash_session_id=v_session;
+
+  if round(v_cash.calculated_expected,2)<>95
+    or round(v_cash.cash_sales,2)<>20
+    or round(v_cash.cash_refunds,2)<>20
+    or round(v_cash.cash_expenses,2)<>5 then
+    raise exception 'TEST FAILED: cash reconciliation expected %, sales %, refunds %, expenses %',
+      v_cash.calculated_expected,v_cash.cash_sales,v_cash.cash_refunds,v_cash.cash_expenses;
+  end if;
+
+  select expected_amount into v_cash.calculated_expected
+  from public.close_cash_session(v_session,95,'Finance close test');
+
+  select * into v_cash
+  from public.business_cash_reconciliation
+  where cash_session_id=v_session;
+
+  if round(v_cash.calculated_expected,2)<>95
+    or round(v_cash.counted_amount,2)<>95
+    or round(v_cash.calculated_difference,2)<>0 then
+    raise exception 'TEST FAILED: closed reconciliation expected %, counted %, difference %',
+      v_cash.calculated_expected,v_cash.counted_amount,v_cash.calculated_difference;
+  end if;
+end;
+$finance_test$;
+
+rollback;
+
+select 'Urbana Café financial reconciliation test: PASS' as result;
