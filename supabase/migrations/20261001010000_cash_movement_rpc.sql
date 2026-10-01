@@ -1,4 +1,4 @@
--- Urbana Café: transactional manual cash movements.
+-- Urbana Café: transactional manual cash movements and security hardening.
 create or replace function public.record_cash_movement(
   p_business_id uuid,
   p_cash_session_id uuid,
@@ -67,11 +67,31 @@ begin
 end;
 $$;
 
-revoke all on function public.record_cash_movement(uuid,uuid,public.cash_movement_type,numeric,text) from public;
-revoke all on function public.record_cash_movement(uuid,uuid,public.cash_movement_type,numeric,text) from anon;
-grant execute on function public.record_cash_movement(uuid,uuid,public.cash_movement_type,numeric,text) to authenticated;
+-- Fix cross-table status checks: sale_status and purchase status are different types.
+create or replace function public.prevent_closed_or_posted_mutation()
+returns trigger
+language plpgsql
+as $$
+begin
+  if tg_table_name='sales' then
+    if old.status in ('completed','cancelled','refunded') then
+      raise exception 'Venda finalizada não pode ser alterada';
+    end if;
+  elsif tg_table_name='purchases' then
+    if old.status in ('posted','cancelled') then
+      raise exception 'Compra lançada não pode ser alterada';
+    end if;
+  elsif tg_table_name='cash_sessions' then
+    if old.status='closed' then
+      raise exception 'Caixa fechado não pode ser alterado';
+    end if;
+  end if;
 
--- Keep exposed SECURITY DEFINER functions explicit and safe.
+  return new;
+end;
+$$;
+
+alter function public.record_cash_movement(uuid,uuid,public.cash_movement_type,numeric,text) set search_path=public;
 alter function public.set_updated_at() set search_path=public;
 alter function public.validate_sale_header_integrity() set search_path=public;
 alter function public.validate_sale_item_integrity() set search_path=public;
@@ -82,6 +102,14 @@ alter function public.validate_purchase_supplier_integrity() set search_path=pub
 alter function public.prevent_ledger_delete() set search_path=public;
 alter function public.prevent_closed_or_posted_mutation() set search_path=public;
 alter function public.normalize_sale_cash_movement() set search_path=public;
+
+revoke all on function public.record_cash_movement(uuid,uuid,public.cash_movement_type,numeric,text) from public;
+revoke all on function public.record_cash_movement(uuid,uuid,public.cash_movement_type,numeric,text) from anon;
+grant execute on function public.record_cash_movement(uuid,uuid,public.cash_movement_type,numeric,text) to authenticated;
+
+revoke all on function public.create_sale_transaction(uuid,uuid,uuid,uuid,text,public.payment_method,jsonb,numeric) from public;
+revoke all on function public.create_sale_transaction(uuid,uuid,uuid,uuid,text,public.payment_method,jsonb,numeric) from anon;
+grant execute on function public.create_sale_transaction(uuid,uuid,uuid,uuid,text,public.payment_method,jsonb,numeric) to authenticated;
 
 revoke all on function public.finalize_sale(uuid,uuid) from public;
 revoke all on function public.finalize_sale(uuid,uuid) from anon;
