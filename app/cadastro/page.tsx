@@ -23,7 +23,7 @@ export default function Cadastro(){
       email:email.trim(),
       password,
       options:{
-        data:{full_name:name.trim()},
+        data:{full_name:name.trim(),business_name:business.trim()||"Urbana Café"},
         emailRedirectTo:"https://urbanacafe-system.vercel.app/auth/callback?next=/dashboard"
       }
     });
