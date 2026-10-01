@@ -9,7 +9,6 @@ declare
   v_business uuid;
   v_other_business uuid;
   v_product uuid;
-  v_other_product uuid;
   v_session uuid;
   v_sale public.sales%rowtype;
   v_cross_count integer;
@@ -18,8 +17,7 @@ declare
   v_cash numeric;
   v_expected numeric;
 begin
-  select m.user_id
-  into v_user
+  select m.user_id into v_user
   from public.business_memberships m
   where m.role='owner' and m.active
   order by m.created_at
@@ -49,8 +47,7 @@ begin
   insert into public.products(
     business_id,name,unit,sale_price,average_cost,stock_quantity,min_stock,is_stock_item,is_sellable,active
   )
-  values(v_other_business,'TEST Other','UN',99,1,10,0,true,true,true)
-  returning id into v_other_product;
+  values(v_other_business,'TEST Other','UN',99,1,10,0,true,true,true);
 
   set local role authenticated;
   perform set_config(
@@ -59,8 +56,7 @@ begin
     true
   );
 
-  select id
-  into v_session
+  select id into v_session
   from public.open_cash_session(v_business,100);
 
   begin
@@ -70,39 +66,27 @@ begin
     values(v_business,v_session,'deposit',1,'should fail',v_user);
 
     raise exception 'TEST FAILED: direct cash_movements INSERT unexpectedly succeeded';
-  exception
-    when others then
-      if sqlerrm like 'TEST FAILED:%' then
-        raise;
-      end if;
+  exception when others then
+    if sqlerrm like 'TEST FAILED:%' then
+      raise;
+    end if;
   end;
 
   perform public.record_cash_movement(
-    v_business,
-    v_session,
-    'withdrawal',
-    10,
-    'Teste de retirada'
+    v_business,v_session,'withdrawal',10,'Teste de retirada'
   );
 
-  select public.create_sale_transaction(
-    v_business,
-    v_session,
-    null,
-    null,
-    'Teste POS atomic',
-    'cash',
-    jsonb_build_array(jsonb_build_object('product_id',v_product,'quantity',2)),
-    0
-  )
-  into v_sale;
+  select * into v_sale
+  from public.create_sale_transaction(
+    v_business,v_session,null,null,'Teste POS atomic','cash',
+    jsonb_build_array(jsonb_build_object('product_id',v_product,'quantity',2)),0
+  );
 
   if v_sale.status<>'completed' or round(v_sale.total,2)<>20 then
     raise exception 'TEST FAILED: sale was not completed at expected total';
   end if;
 
-  select stock_quantity
-  into v_stock
+  select stock_quantity into v_stock
   from public.products
   where id=v_product;
 
@@ -110,8 +94,7 @@ begin
     raise exception 'TEST FAILED: stock expected 3, got %',v_stock;
   end if;
 
-  select coalesce(sum(amount),0)
-  into v_payment
+  select coalesce(sum(amount),0) into v_payment
   from public.sale_payments
   where sale_id=v_sale.id;
 
@@ -119,8 +102,7 @@ begin
     raise exception 'TEST FAILED: payment expected 20, got %',v_payment;
   end if;
 
-  select round(coalesce(sum(amount),0),2)
-  into v_cash
+  select round(coalesce(sum(amount),0),2) into v_cash
   from public.cash_movements
   where cash_session_id=v_session;
 
@@ -128,8 +110,7 @@ begin
     raise exception 'TEST FAILED: cash expected 110, got %',v_cash;
   end if;
 
-  select count(*)
-  into v_cross_count
+  select count(*) into v_cross_count
   from public.products
   where business_id=v_other_business;
 
@@ -137,8 +118,7 @@ begin
     raise exception 'TEST FAILED: cross-tenant product rows visible';
   end if;
 
-  select expected_amount
-  into v_expected
+  select expected_amount into v_expected
   from public.close_cash_session(v_session,110,'Teste de fechamento');
 
   if round(v_expected,2)<>110 then
