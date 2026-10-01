@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function Home(){return <main className="login"><div className="login-card"><h1>Urbana <span style={{color:"#b68b3c"}}>Café</span></h1><p>Sistema de gestão operacional e gerencial.</p><div className="notice">CRM + POS + Caixa + Estoque + Compras + Relatórios</div><Link href="/login" className="btn" style={{display:"block",textAlign:"center",textDecoration:"none"}}>Entrar no sistema</Link></div></main>}
