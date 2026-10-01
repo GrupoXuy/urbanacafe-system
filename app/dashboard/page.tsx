@@ -5,7 +5,7 @@ import {createClient} from "@/lib/supabase-browser";
 
 const links=[
   ["Dashboard","/dashboard"],["Vendas / POS","/dashboard/pos"],["Caixa","/dashboard/caixa"],["Estoque","/dashboard/estoque"],
-  ["Produtos","/dashboard/produtos"],["Compras","/dashboard/compras"],["Despesas","/dashboard/despesas"],["Clientes","/dashboard/clientes"],
+  ["Produtos","/dashboard/produtos"],["Compras","/dashboard/compras"],["Fornecedores","/dashboard/fornecedores"],["Despesas","/dashboard/despesas"],["Clientes","/dashboard/clientes"],
   ["Mesas","/dashboard/mesas"],["Reservas","/dashboard/reservas"],["Relatórios","/dashboard/relatorios"],["Funcionários","/dashboard/funcionarios"]
 ];
 
@@ -62,6 +62,7 @@ export default function Dashboard(){
               ["Estoque","Operacional","/dashboard/estoque","Consultar estoque"],
               ["Produtos","Operacional","/dashboard/produtos","Gerenciar produtos"],
               ["Compras","Operacional","/dashboard/compras","Consultar compras"],
+              ["Fornecedores","Operacional","/dashboard/fornecedores","Gerenciar fornecedores"],
               ["Despesas","Operacional","/dashboard/despesas","Lançar despesa"],
               ["Clientes","Operacional","/dashboard/clientes","Gerenciar clientes"],
               ["Mesas","Operacional","/dashboard/mesas","Gerenciar mesas"],
