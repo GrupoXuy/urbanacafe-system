@@ -2,15 +2,211 @@
 import {useEffect,useMemo,useState} from "react";
 import Link from "next/link";
 import {createClient} from "@/lib/supabase-browser";
+
 type Product={id:string;name:string;sale_price:number;stock_quantity:number};
 type CartItem=Product&{quantity:number};
+
 export default function POS(){
- const [products,setProducts]=useState<Product[]>([]),[search,setSearch]=useState(""),[cart,setCart]=useState<CartItem[]>([]),[business,setBusiness]=useState(""),[session,setSession]=useState<any>(null),[message,setMessage]=useState(""),[saving,setSaving]=useState(false);
- const c=createClient();
- useEffect(()=>{async function load(){const {data:{user}}=await c.auth.getUser();if(!user)return;const {data:m}=await c.from("business_memberships").select("business_id").eq("user_id",user.id).eq("active",true).limit(1).maybeSingle();if(m){setBusiness(m.business_id);const {data:s}=await c.from("cash_sessions").select("*").eq("business_id",m.business_id).eq("status","open").maybeSingle();setSession(s)}const {data:p}=await c.from("products").select("id,name,sale_price,stock_quantity").eq("active",true).eq("is_sellable",true).order("name");setProducts(p||[])}load()},[]);
- const filtered=products.filter(p=>p.name.toLowerCase().includes(search.toLowerCase()));
- const total=useMemo(()=>cart.reduce((s,p)=>s+Number(p.sale_price)*p.quantity,0),[cart]);
- function add(p:Product){setCart(old=>{const x=old.find(i=>i.id===p.id);return x?old.map(i=>i.id===p.id?{...i,quantity:i.quantity+1}:i):[...old,{...p,quantity:1}]})}
- async function finalize(){setMessage("");if(!business||!session){setMessage("Abra o caixa antes de finalizar a venda.");return}if(!cart.length)return;setSaving(true);const {data:sale,error}=await c.from("sales").insert({business_id:business,channel:"counter",status:"open",subtotal:total,total:total}).select("id").single();if(error){setMessage(error.message);setSaving(false);return}const {error:itemError}=await c.from("sale_items").insert(cart.map(i=>({sale_id:sale.id,product_id:i.id,quantity:i.quantity,unit_price:i.sale_price,unit_cost:0})));if(itemError){setMessage(itemError.message);setSaving(false);return}const {error:payError}=await c.from("sale_payments").insert({sale_id:sale.id,method:"cash",amount:total});if(payError){setMessage(payError.message);setSaving(false);return}const {error:finalError}=await c.rpc("finalize_sale",{p_sale_id:sale.id,p_cash_session_id:session.id});if(finalError)setMessage(finalError.message);else{setMessage("Venda finalizada com sucesso.");setCart([])}setSaving(false)}
- return <div className="shell"><aside className="sidebar"><div className="brand">URBANA <span>CAFÉ</span></div><nav className="nav"><Link href="/dashboard">Dashboard</Link><Link className="active" href="/dashboard/pos">Vendas / POS</Link><Link href="/dashboard/caixa">Caixa</Link><Link href="/dashboard/estoque">Estoque</Link></nav></aside><main className="main"><div className="topbar"><div><h1 className="title">Vendas / POS</h1><div className="subtitle">Atendimento, venda e pagamento</div></div><div>{session?"Caixa aberto":"Caixa fechado"}</div></div><div className="grid"><div className="card" style={{gridColumn:"span 2"}}><input placeholder="Buscar produto..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:"100%",padding:12,border:"1px solid #ddd",borderRadius:9}}/><div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginTop:14}}>{filtered.map(p=><button key={p.id} onClick={()=>add(p)} style={{padding:14,border:"1px solid #eee",borderRadius:10,background:"#fff",textAlign:"left",cursor:"pointer"}}><b>{p.name}</b><div>UYU {p.sale_price}</div><small>Estoque: {p.stock_quantity}</small></button>)}</div></div><div className="card"><div className="label">Comanda atual</div>{cart.length===0?<p>Nenhum item.</p>:cart.map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid #eee"}}><span>{p.name} × {p.quantity}</span><b>UYU {(Number(p.sale_price)*p.quantity).toFixed(2)}</b></div>)}<div style={{marginTop:18,fontSize:22,fontWeight:800}}>Total: UYU {total.toFixed(2)}</div><button className="btn" style={{marginTop:14}} disabled={!cart.length||saving} onClick={finalize}>{saving?"Processando...":"Finalizar venda em dinheiro"}</button>{message&&<div className="notice">{message}</div>}</div></div></main></div>
+  const [products,setProducts]=useState<Product[]>([]);
+  const [search,setSearch]=useState("");
+  const [cart,setCart]=useState<CartItem[]>([]);
+  const [business,setBusiness]=useState("");
+  const [session,setSession]=useState<any>(null);
+  const [message,setMessage]=useState("");
+  const [saving,setSaving]=useState(false);
+
+  useEffect(()=>{
+    async function load(){
+      const c=createClient();
+      const {data:{user}}=await c.auth.getUser();
+      if(!user)return;
+
+      const {data:m}=await c
+        .from("business_memberships")
+        .select("business_id")
+        .eq("user_id",user.id)
+        .eq("active",true)
+        .limit(1)
+        .maybeSingle();
+
+      if(m){
+        setBusiness(m.business_id);
+        const {data:s}=await c
+          .from("cash_sessions")
+          .select("*")
+          .eq("business_id",m.business_id)
+          .eq("status","open")
+          .maybeSingle();
+        setSession(s);
+      }
+
+      const {data:p}=await c
+        .from("products")
+        .select("id,name,sale_price,stock_quantity")
+        .eq("active",true)
+        .eq("is_sellable",true)
+        .order("name");
+
+      setProducts(p||[]);
+    }
+
+    load();
+  },[]);
+
+  const filtered=products.filter(p=>p.name.toLowerCase().includes(search.toLowerCase()));
+  const total=useMemo(()=>cart.reduce((s,p)=>s+Number(p.sale_price)*p.quantity,0),[cart]);
+
+  function add(p:Product){
+    setCart(old=>{
+      const x=old.find(i=>i.id===p.id);
+      return x
+        ? old.map(i=>i.id===p.id?{...i,quantity:i.quantity+1}:i)
+        : [...old,{...p,quantity:1}];
+    });
+  }
+
+  async function finalize(){
+    setMessage("");
+    if(!business||!session){
+      setMessage("Abra o caixa antes de finalizar a venda.");
+      return;
+    }
+    if(!cart.length)return;
+
+    setSaving(true);
+    const c=createClient();
+
+    const {data:sale,error}=await c
+      .from("sales")
+      .insert({business_id:business,channel:"counter",status:"open",subtotal:total,total:total})
+      .select("id")
+      .single();
+
+    if(error){
+      setMessage(error.message);
+      setSaving(false);
+      return;
+    }
+
+    const {error:itemError}=await c
+      .from("sale_items")
+      .insert(cart.map(i=>({
+        sale_id:sale.id,
+        product_id:i.id,
+        quantity:i.quantity,
+        unit_price:i.sale_price,
+        unit_cost:0
+      })));
+
+    if(itemError){
+      setMessage(itemError.message);
+      setSaving(false);
+      return;
+    }
+
+    const {error:payError}=await c
+      .from("sale_payments")
+      .insert({sale_id:sale.id,method:"cash",amount:total});
+
+    if(payError){
+      setMessage(payError.message);
+      setSaving(false);
+      return;
+    }
+
+    const {error:finalError}=await c.rpc("finalize_sale",{
+      p_sale_id:sale.id,
+      p_cash_session_id:session.id
+    });
+
+    if(finalError){
+      setMessage(finalError.message);
+    }else{
+      setMessage("Venda finalizada com sucesso.");
+      setCart([]);
+    }
+
+    setSaving(false);
+  }
+
+  return (
+    <div className="shell">
+      <aside className="sidebar">
+        <div className="brand">URBANA <span>CAFÉ</span></div>
+        <nav className="nav">
+          <Link href="/dashboard">Dashboard</Link>
+          <Link className="active" href="/dashboard/pos">Vendas / POS</Link>
+          <Link href="/dashboard/caixa">Caixa</Link>
+          <Link href="/dashboard/estoque">Estoque</Link>
+        </nav>
+      </aside>
+
+      <main className="main">
+        <div className="topbar">
+          <div>
+            <h1 className="title">Vendas / POS</h1>
+            <div className="subtitle">Atendimento, venda e pagamento</div>
+          </div>
+          <div>{session?"Caixa aberto":"Caixa fechado"}</div>
+        </div>
+
+        <div className="grid">
+          <div className="card" style={{gridColumn:"span 2"}}>
+            <input
+              placeholder="Buscar produto..."
+              value={search}
+              onChange={e=>setSearch(e.target.value)}
+              style={{width:"100%",padding:12,border:"1px solid #ddd",borderRadius:9}}
+            />
+
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginTop:14}}>
+              {filtered.map(p=>(
+                <button
+                  key={p.id}
+                  onClick={()=>add(p)}
+                  style={{padding:14,border:"1px solid #eee",borderRadius:10,background:"#fff",textAlign:"left",cursor:"pointer"}}
+                >
+                  <b>{p.name}</b>
+                  <div>UYU {p.sale_price}</div>
+                  <small>Estoque: {p.stock_quantity}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="label">Comanda atual</div>
+
+            {cart.length===0
+              ? <p>Nenhum item.</p>
+              : cart.map(p=>(
+                  <div
+                    key={p.id}
+                    style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid #eee"}}
+                  >
+                    <span>{p.name} × {p.quantity}</span>
+                    <b>UYU {(Number(p.sale_price)*p.quantity).toFixed(2)}</b>
+                  </div>
+                ))
+            }
+
+            <div style={{marginTop:18,fontSize:22,fontWeight:800}}>
+              Total: UYU {total.toFixed(2)}
+            </div>
+
+            <button
+              className="btn"
+              style={{marginTop:14}}
+              disabled={!cart.length||saving}
+              onClick={finalize}
+            >
+              {saving?"Processando...":"Finalizar venda em dinheiro"}
+            </button>
+
+            {message&&<div className="notice">{message}</div>}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 }
