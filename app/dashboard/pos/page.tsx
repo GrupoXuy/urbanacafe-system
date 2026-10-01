@@ -8,6 +8,15 @@ type CartItem=Product&{quantity:number};
 type Customer={id:string;name:string;phone:string|null};
 type CafeTable={id:string;name:string;seats:number|null};
 
+const paymentMethods=[
+  ["cash","Dinheiro"],
+  ["debit","Débito"],
+  ["credit","Crédito"],
+  ["transfer","Transferência"],
+  ["mercado_pago","Mercado Pago"],
+  ["other","Outro"]
+] as const;
+
 export default function POS(){
   const [products,setProducts]=useState<Product[]>([]);
   const [customers,setCustomers]=useState<Customer[]>([]);
@@ -19,6 +28,7 @@ export default function POS(){
   const [customerId,setCustomerId]=useState("");
   const [tableId,setTableId]=useState("");
   const [note,setNote]=useState("");
+  const [paymentMethod,setPaymentMethod]=useState("cash");
   const [message,setMessage]=useState("");
   const [saving,setSaving]=useState(false);
 
@@ -85,50 +95,26 @@ export default function POS(){
 
     setSaving(true);
     const c=createClient();
-    const {data:sale,error}=await c.from("sales").insert({
-      business_id:business,
-      customer_id:customerId||null,
-      table_id:tableId||null,
-      channel:"counter",
-      status:"open",
-      subtotal:total,
-      discount:0,
-      total:total,
-      notes:note.trim()||null
-    }).select("id").single();
+    const {error}=await c.rpc("create_sale_transaction",{
+      p_business_id:business,
+      p_cash_session_id:session.id,
+      p_customer_id:customerId||null,
+      p_table_id:tableId||null,
+      p_notes:note.trim()||null,
+      p_payment_method:paymentMethod,
+      p_items:cart.map(i=>({product_id:i.id,quantity:i.quantity})),
+      p_discount:0
+    });
 
     if(error){
       setMessage(error.message);
-      setSaving(false);
-      return;
-    }
-
-    const {error:itemError}=await c.from("sale_items").insert(cart.map(i=>({
-      sale_id:sale.id,product_id:i.id,quantity:i.quantity,unit_price:i.sale_price,unit_cost:0
-    })));
-
-    if(itemError){
-      setMessage(itemError.message);
-      setSaving(false);
-      return;
-    }
-
-    const {error:payError}=await c.from("sale_payments").insert({sale_id:sale.id,method:"cash",amount:total});
-    if(payError){
-      setMessage(payError.message);
-      setSaving(false);
-      return;
-    }
-
-    const {error:finalError}=await c.rpc("finalize_sale",{p_sale_id:sale.id,p_cash_session_id:session.id});
-    if(finalError){
-      setMessage(finalError.message);
     }else{
       setMessage("Venda finalizada com sucesso.");
       setCart([]);
       setCustomerId("");
       setTableId("");
       setNote("");
+      setPaymentMethod("cash");
       await load();
     }
     setSaving(false);
@@ -186,6 +172,13 @@ export default function POS(){
             </select></label>
           </div>
 
+          <div className="grid" style={{gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <label className="field"><span>Forma de pagamento</span><select value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)}>
+              {paymentMethods.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+            </select></label>
+            <div className="field"><span>Sessão de caixa</span><div style={{padding:"12px 0"}}>{session?"Aberta":"Fechada"}</div></div>
+          </div>
+
           <label className="field"><span>Observação</span><input value={note} onChange={e=>setNote(e.target.value)} placeholder="Ex.: sem açúcar, retirar guardanapo..." /></label>
 
           <div style={{marginTop:12}}>
@@ -199,7 +192,7 @@ export default function POS(){
 
           <div style={{marginTop:18,fontSize:24,fontWeight:800}}>Total: UYU {total.toFixed(2)}</div>
           <button className="btn" style={{marginTop:14}} disabled={!cart.length||saving||!session} onClick={finalize}>
-            {saving?"Processando...":"Finalizar venda em dinheiro"}
+            {saving?"Processando...":"Finalizar venda"}
           </button>
           {message&&<div className="notice">{message}</div>}
         </div>
