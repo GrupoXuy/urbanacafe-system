@@ -58,7 +58,6 @@ select
   (coalesce(cs.revenue,0)+coalesce(rs.revenue,0))::numeric(14,2) as revenue,
   (coalesce(cs.cogs,0)+coalesce(rs.cogs,0))::numeric(14,2) as cogs,
   coalesce(cs.sales_count,0)::bigint as sales_count,
-  coalesce(rs.refunds_count,0)::bigint as refunds_count,
   coalesce(e.expenses,0)::numeric(14,2) as expenses,
   coalesce(c.cash_in,0)::numeric(14,2) as cash_in,
   coalesce(c.cash_out,0)::numeric(14,2) as cash_out,
@@ -70,7 +69,8 @@ select
     coalesce(cs.revenue,0)+coalesce(rs.revenue,0)
     -coalesce(cs.cogs,0)-coalesce(rs.cogs,0)
     -coalesce(e.expenses,0)
-  )::numeric(14,2) as net_profit
+  )::numeric(14,2) as net_profit,
+  coalesce(rs.refunds_count,0)::bigint as refunds_count
 from dates d
 left join completed_sales cs
   on cs.business_id=d.business_id and cs.report_date=d.report_date
