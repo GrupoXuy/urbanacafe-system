@@ -126,6 +126,7 @@ export default function POS(){
       <nav className="nav">
         <Link href="/dashboard">Dashboard</Link>
         <Link className="active" href="/dashboard/pos">Vendas / POS</Link>
+        <Link href="/dashboard/vendas">Histórico de vendas</Link>
         <Link href="/dashboard/caixa">Caixa</Link>
         <Link href="/dashboard/estoque">Estoque</Link>
         <Link href="/dashboard/produtos">Produtos</Link>
