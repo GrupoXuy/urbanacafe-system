@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useState} from "react";
+import {useEffect,useMemo,useState} from "react";
 import {createClient} from "@/lib/supabase-browser";
 
 type Session={id:string;opening_amount:number;opened_at:string;status:string;expected_amount:number|null;counted_amount:number|null;difference:number|null};
@@ -11,6 +11,7 @@ export default function Caixa(){
   const [movements,setMovements]=useState<Movement[]>([]);
   const [amount,setAmount]=useState("0");
   const [counted,setCounted]=useState("");
+  const [closingNote,setClosingNote]=useState("");
   const [moveType,setMoveType]=useState("deposit");
   const [moveAmount,setMoveAmount]=useState("");
   const [description,setDescription]=useState("");
@@ -27,25 +28,38 @@ export default function Caixa(){
     const {data:s}=await c.from("cash_sessions").select("id,opening_amount,opened_at,status,expected_amount,counted_amount,difference").eq("business_id",m.business_id).eq("status","open").maybeSingle();
     setSession(s as Session|null);
     if(s){
-      const {data:mv}=await c.from("cash_movements").select("id,movement_type,amount,description,created_at").eq("business_id",m.business_id).eq("cash_session_id",s.id).order("created_at",{ascending:false}).limit(30);
+      const {data:mv}=await c.from("cash_movements").select("id,movement_type,amount,description,created_at").eq("business_id",m.business_id).eq("cash_session_id",s.id).order("created_at",{ascending:false}).limit(1000);
       setMovements((mv||[]) as Movement[]);
     }else setMovements([]);
   }
   useEffect(()=>{load()},[]);
 
+  const expected=useMemo(()=>movements.reduce((sum,m)=>sum+Number(m.amount||0),0),[movements]);
+
   async function open(){
     setSaving(true);setMessage("");
     const {data,error}=await createClient().rpc("open_cash_session",{p_business_id:business,p_opening_amount:Number(amount)});
-    if(error)setMessage(error.message);else setSession(data as Session);
-    setSaving(false);load();
+    if(error)setMessage(error.message);else{setMessage("Caixa aberto com sucesso.");setAmount("0")}
+    setSaving(false);
+    await load();
   }
 
   async function close(){
     if(!session)return;
     setSaving(true);setMessage("");
-    const {data,error}=await createClient().rpc("close_cash_session",{p_session_id:session.id,p_counted_amount:Number(counted)});
-    if(error)setMessage(error.message);else setMessage(`Caixa fechado. Diferença: UYU ${Number(data?.difference||0).toFixed(2)}`);
-    setSaving(false);load();
+    const {data,error}=await createClient().rpc("close_cash_session",{
+      p_session_id:session.id,
+      p_counted_amount:Number(counted),
+      p_note:closingNote.trim()||null
+    });
+    if(error)setMessage(error.message);
+    else{
+      setMessage(`Caixa fechado. Esperado: UYU ${Number(data?.expected_amount||expected).toFixed(2)} · Contado: UYU ${Number(data?.counted_amount||0).toFixed(2)} · Diferença: UYU ${Number(data?.difference||0).toFixed(2)}`);
+      setCounted("");
+      setClosingNote("");
+    }
+    setSaving(false);
+    await load();
   }
 
   async function addMovement(){
@@ -55,7 +69,8 @@ export default function Caixa(){
     const {error}=await createClient().from("cash_movements").insert({
       business_id:business,cash_session_id:session.id,movement_type:moveType,amount:sign*Number(moveAmount),description:description.trim()||null
     });
-    if(error)setMessage(error.message);else{setMessage("Movimentação registrada.");setMoveAmount("");setDescription("");load()}
+    if(error)setMessage(error.message);
+    else{setMessage("Movimentação registrada.");setMoveAmount("");setDescription("");await load()}
     setSaving(false);
   }
 
@@ -64,6 +79,7 @@ export default function Caixa(){
     <div className="grid section">
       <div className="card"><div className="label">Status</div><div className="value">{session?"Aberto":"Fechado"}</div><p>{session?new Date(session.opened_at).toLocaleString("pt-BR"):"Nenhuma sessão aberta"}</p></div>
       <div className="card"><div className="label">Abertura</div><div className="value">UYU {Number(session?.opening_amount||0).toFixed(2)}</div></div>
+      <div className="card"><div className="label">Dinheiro esperado</div><div className="value">UYU {expected.toFixed(2)}</div></div>
       <div className="card"><div className="label">Lançamentos</div><div className="value">{movements.length}</div></div>
     </div>
 
@@ -77,7 +93,7 @@ export default function Caixa(){
       <>
         <div className="card section"><h2>Nova movimentação</h2>
           <div className="grid" style={{gridTemplateColumns:"1fr 1fr 2fr auto"}}>
-            <label className="field"><span>Tipo</span><select value={moveType} onChange={e=>setMoveType(e.target.value)}><option value="deposit">Depósito</option><option value="withdrawal">Retirada</option><option value="adjustment">Ajuste</option></select></label>
+            <label className="field"><span>Tipo</span><select value={moveType} onChange={e=>setMoveType(e.target.value)}><option value="deposit">Depósito</option><option value="withdrawal">Retirada</option><option value="adjustment">Ajuste positivo</option></select></label>
             <label className="field"><span>Valor</span><input type="number" min="0.01" step="0.01" value={moveAmount} onChange={e=>setMoveAmount(e.target.value)}/></label>
             <label className="field"><span>Descrição</span><input value={description} onChange={e=>setDescription(e.target.value)} placeholder="Motivo da movimentação"/></label>
             <div className="field"><span>&nbsp;</span><button className="btn" style={{width:"auto"}} onClick={addMovement} disabled={!moveAmount||saving}>Registrar</button></div>
@@ -85,8 +101,12 @@ export default function Caixa(){
         </div>
 
         <div className="card section"><h2>Fechar caixa</h2>
-          <label className="field"><span>Valor contado</span><input type="number" min="0" step="0.01" value={counted} onChange={e=>setCounted(e.target.value)} /></label>
-          <button className="btn" onClick={close} disabled={!counted||saving}>{saving?"Fechando...":"Fechar caixa"}</button>
+          <div className="grid" style={{gridTemplateColumns:"1fr 2fr auto"}}>
+            <label className="field"><span>Valor contado</span><input type="number" min="0" step="0.01" value={counted} onChange={e=>setCounted(e.target.value)} /></label>
+            <label className="field"><span>Observação do fechamento</span><input value={closingNote} onChange={e=>setClosingNote(e.target.value)} placeholder="Diferença, ocorrência, conferência..." /></label>
+            <div className="field"><span>Esperado</span><div className="value" style={{fontSize:22}}>UYU {expected.toFixed(2)}</div></div>
+          </div>
+          <button className="btn" onClick={close} disabled={counted===""||saving}>{saving?"Fechando...":"Fechar caixa"}</button>
         </div>
 
         <div className="section"><h2>Movimentações recentes</h2>
