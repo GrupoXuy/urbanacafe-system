@@ -31,20 +31,26 @@ export default function Compras(){
  function removeLine(id:string){setLines(old=>old.filter(x=>x.id!==id))}
  async function saveAndPost(){
    if(!business||!lines.length){setMessage("Adicione pelo menos um item.");return}
+   const invalid=lines.some(l=>!Number.isFinite(l.quantity)||l.quantity<=0||!Number.isFinite(l.unit_cost)||l.unit_cost<0);
+   if(invalid){setMessage("Revise quantidade e custo dos itens.");return}
    setSaving(true);setMessage("");
    const c=createClient();
-   const {data:purchase,error}=await c.from("purchases").insert({
-     business_id:business,supplier_id:supplier||null,invoice_number:invoice||null,
-     status:"draft",payment_method:paymentMethod,total:0
-   }).select("id").single();
-   if(error){setMessage(error.message);setSaving(false);return}
-   const {error:itemError}=await c.from("purchase_items").insert(lines.map(l=>({
-     purchase_id:purchase.id,product_id:l.id,quantity:l.quantity,unit_cost:l.unit_cost
-   })));
-   if(itemError){setMessage(itemError.message);setSaving(false);return}
-   const {error:postError}=await c.rpc("post_purchase",{p_purchase_id:purchase.id});
-   if(postError)setMessage(postError.message);
-   else{setMessage("Compra lançada: estoque e custo médio atualizados.");setLines([]);setInvoice("");load()}
+   const {error}=await c.rpc("create_purchase_transaction",{
+     p_business_id:business,
+     p_supplier_id:supplier||null,
+     p_invoice_number:invoice.trim()||null,
+     p_payment_method:paymentMethod,
+     p_items:lines.map(l=>({product_id:l.id,quantity:l.quantity,unit_cost:l.unit_cost}))
+   });
+   if(error)setMessage(error.message);
+   else{
+     setMessage("Compra lançada: estoque e custo médio atualizados.");
+     setLines([]);
+     setInvoice("");
+     setSelected("");
+     setUnitCost("");
+     await load();
+   }
    setSaving(false);
  }
  return <div className="main">

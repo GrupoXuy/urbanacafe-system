@@ -39,4 +39,6 @@ Branch de produção: `main`
 A validação automatizada usa Node 22.14.0, `npm ci`, typecheck, lint e build, com dependências fixadas em `package-lock.json`.
 
 ## Próxima fase
-Implementar RPC transacional para fechamento de venda, consumo de receita/ficha técnica, compras com custo médio ponderado, fechamento de caixa, relatórios e testes RLS.
+Compras já usam RPC transacional, com atualização de estoque, custo médio e impacto de caixa em uma única transação. Os livros de vendas, compras, pagamentos, caixa, despesas e estoque ficam protegidos contra escrita direta pelo navegador.
+
+Próximas etapas: aprofundar consumo por ficha técnica/receitas, fechamento e reconciliação de caixa, relatórios operacionais e índices das chaves estrangeiras conforme os avisos de performance do Supabase.
