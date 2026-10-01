@@ -36,5 +36,7 @@ Projeto Vercel: `urbanacafe-system`
 Repositório: `GrupoXuy/urbanacafe-system`
 Branch de produção: `main`
 
+A validação automatizada usa Node 22.14.0, `npm ci`, typecheck, lint e build, com dependências fixadas em `package-lock.json`.
+
 ## Próxima fase
 Implementar RPC transacional para fechamento de venda, consumo de receita/ficha técnica, compras com custo médio ponderado, fechamento de caixa, relatórios e testes RLS.
