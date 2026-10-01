@@ -6,7 +6,7 @@ import {createClient} from "@/lib/supabase-browser";
 const links=[
   ["Dashboard","/dashboard"],["Vendas / POS","/dashboard/pos"],["Caixa","/dashboard/caixa"],["Estoque","/dashboard/estoque"],
   ["Produtos","/dashboard/produtos"],["Compras","/dashboard/compras"],["Despesas","/dashboard/despesas"],["Clientes","/dashboard/clientes"],
-  ["Mesas","/dashboard/mesas"],["Relatórios","/dashboard/relatorios"],["Funcionários","/dashboard/funcionarios"]
+  ["Mesas","/dashboard/mesas"],["Reservas","/dashboard/reservas"],["Relatórios","/dashboard/relatorios"],["Funcionários","/dashboard/funcionarios"]
 ];
 
 export default function Dashboard(){
@@ -65,6 +65,7 @@ export default function Dashboard(){
               ["Despesas","Operacional","/dashboard/despesas","Lançar despesa"],
               ["Clientes","Operacional","/dashboard/clientes","Gerenciar clientes"],
               ["Mesas","Operacional","/dashboard/mesas","Gerenciar mesas"],
+              ["Reservas","Operacional","/dashboard/reservas","Gerenciar reservas"],
               ["Relatórios","Gerencial","/dashboard/relatorios","Ver resultados"],
               ["Funcionários","Administrativo","/dashboard/funcionarios","Gerenciar equipe"]
             ].map(([module,status,href,action])=><tr key={module}><td>{module}</td><td>{status}</td><td><Link href={href}>{action}</Link></td></tr>)}
