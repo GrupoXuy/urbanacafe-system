@@ -1,0 +1,1 @@
+export type DashboardMetrics={revenue:number;cashIn:number;cashOut:number;cogs:number;grossProfit:number;expenses:number;netProfit:number;salesCount:number;averageTicket:number;lowStock:number};
