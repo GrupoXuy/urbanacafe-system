@@ -38,10 +38,10 @@ export default function Caixa(){
 
   async function open(){
     setSaving(true);setMessage("");
-    const {data,error}=await createClient().rpc("open_cash_session",{p_business_id:business,p_opening_amount:Number(amount)});
+    const {error}=await createClient().rpc("open_cash_session",{p_business_id:business,p_opening_amount:Number(amount)});
     if(error)setMessage(error.message);else{setMessage("Caixa aberto com sucesso.");setAmount("0")}
-    setSaving(false);
     await load();
+    setSaving(false);
   }
 
   async function close(){
@@ -58,16 +58,19 @@ export default function Caixa(){
       setCounted("");
       setClosingNote("");
     }
-    setSaving(false);
     await load();
+    setSaving(false);
   }
 
   async function addMovement(){
     if(!session||Number(moveAmount)<=0)return;
     setSaving(true);setMessage("");
-    const sign=moveType==="withdrawal"?-1:1;
-    const {error}=await createClient().from("cash_movements").insert({
-      business_id:business,cash_session_id:session.id,movement_type:moveType,amount:sign*Number(moveAmount),description:description.trim()||null
+    const {error}=await createClient().rpc("record_cash_movement",{
+      p_business_id:business,
+      p_cash_session_id:session.id,
+      p_movement_type:moveType,
+      p_amount:Number(moveAmount),
+      p_description:description.trim()||null
     });
     if(error)setMessage(error.message);
     else{setMessage("Movimentação registrada.");setMoveAmount("");setDescription("");await load()}
