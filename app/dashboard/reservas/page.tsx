@@ -43,16 +43,24 @@ export default function Reservas(){
     e.preventDefault();
     setSaving(true);setMessage("");
     if(!date){setMessage("Informe data e hora da reserva.");setSaving(false);return}
-    const {error}=await createClient().from("reservations").insert({
-      business_id:business,customer_id:customer||null,table_id:table||null,reservation_at:new Date(date).toISOString(),party_size:Number(partySize)||2,status:"pending",notes:notes.trim()||null
+    const {error}=await createClient().rpc("create_reservation_transaction",{
+      p_business_id:business,
+      p_customer_id:customer||null,
+      p_table_id:table||null,
+      p_reservation_at:new Date(date).toISOString(),
+      p_party_size:Number(partySize)||2,
+      p_notes:notes.trim()||null
     });
     if(error)setMessage(error.message);
-    else{setMessage("Reserva cadastrada.");setCustomer("");setTable("");setPartySize("2");setNotes("");await load()}
+    else{setMessage("Reserva cadastrada.");setCustomer("");setTable("");setPartySize("2");setNotes("");setDate("");await load()}
     setSaving(false);
   }
 
   async function changeStatus(id:string,status:string){
-    const {error}=await createClient().from("reservations").update({status}).eq("id",id).eq("business_id",business);
+    const {error}=await createClient().rpc("update_reservation_status",{
+      p_reservation_id:id,
+      p_status:status
+    });
     if(error)setMessage(error.message);else load();
   }
 
