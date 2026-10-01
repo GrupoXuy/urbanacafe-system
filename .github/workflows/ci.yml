@@ -2,7 +2,7 @@ name: Urbana Café CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main","fix/pos-cash-transactional-hardening"]
   pull_request:
     branches: ["main"]
 
