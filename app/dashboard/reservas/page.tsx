@@ -4,7 +4,7 @@ import {createClient} from "@/lib/supabase-browser";
 
 type Customer={id:string;name:string};
 type TableRow={id:string;name:string;seats:number|null};
-type Reservation={id:string;customer_id:string|null;table_id:string|null;reservation_at:string;party_size:number;status:string;notes:string|null;customers?:{name:string}|null;cafe_tables?:{name:string}|null};
+type Reservation={id:string;customer_id:string|null;table_id:string|null;reservation_at:string;party_size:number;status:string;notes:string|null;customers?:{name:string}[]|null;cafe_tables?:{name:string}[]|null};
 
 const statuses=[["pending","Pendente"],["confirmed","Confirmada"],["seated","Sentada"],["completed","Concluída"],["cancelled","Cancelada"]];
 
@@ -72,7 +72,7 @@ export default function Reservas(){
     </form>
     <div className="section">
       <table className="table"><thead><tr><th>Data</th><th>Cliente</th><th>Mesa</th><th>Pessoas</th><th>Status</th><th>Observação</th></tr></thead>
-      <tbody>{items.map(r=><tr key={r.id}><td>{new Date(r.reservation_at).toLocaleString("pt-BR")}</td><td>{r.customers?.name||"—"}</td><td>{r.cafe_tables?.name||"—"}</td><td>{r.party_size}</td><td><select value={r.status} onChange={e=>changeStatus(r.id,e.target.value)}>{statuses.map(s=><option key={s[0]} value={s[0]}>{s[1]}</option>)}</select></td><td>{r.notes||"—"}</td></tr>)}</tbody>
+      <tbody>{items.map(r=><tr key={r.id}><td>{new Date(r.reservation_at).toLocaleString("pt-BR")}</td><td>{r.customers?.[0]?.name||"—"}</td><td>{r.cafe_tables?.[0]?.name||"—"}</td><td>{r.party_size}</td><td><select value={r.status} onChange={e=>changeStatus(r.id,e.target.value)}>{statuses.map(s=><option key={s[0]} value={s[0]}>{s[1]}</option>)}</select></td><td>{r.notes||"—"}</td></tr>)}</tbody>
       </table>
     </div>
   </div>
