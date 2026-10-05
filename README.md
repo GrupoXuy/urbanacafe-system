@@ -107,7 +107,7 @@ Esses itens não impedem a operação atual; os builds do Vercel e os testes tra
 
 ## Próxima evolução
 
-Depois do núcleo concluído, a evolução incremental prioriza o KDS operacional: prioridades e SLA de produção, filas por estação, tempos de preparo, atraso, indicadores e automações de cozinha/bar, seguida por integrações externas e refinamentos de UX.
+Depois do núcleo concluído, a evolução incremental prioriza o KDS operacional: prioridades e SLA de produção, filas por estação, tempos de preparo, atraso, indicadores e automações de cozinha/bar, Central de Performance KDS com histórico por período, SLA por estação, gargalos prováveis, produtos críticos e demanda por hora, seguida por integrações externas e refinamentos de UX.
 
 ## Regra de evolução
 
