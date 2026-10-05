@@ -277,7 +277,7 @@ export default function KDS(){
       </div>
       <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
         <span className="subtitle">{realtime?"● Tempo real":"○ Reconectando..."}</span>
-        <Link href="/dashboard/comandas" className="btn" style={{width:"auto",textDecoration:"none"}}>Comandas</Link>
+        <Link href="/dashboard/comandas" className="btn" style={{width:"auto",textDecoration:"none"}}>Comandas</Link><Link href="/dashboard/kds/performance" className="btn" style={{width:"auto",textDecoration:"none"}}>Performance</Link>
         <Link href="/dashboard" className="btn" style={{width:"auto",textDecoration:"none"}}>Dashboard</Link>
       </div>
     </div>
