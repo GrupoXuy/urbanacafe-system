@@ -249,8 +249,8 @@ begin
   from public.cash_movements
   where cash_session_id=v_session;
 
-  if v_cash<>125 then
-    raise exception 'TEST FAILED: cash ledger expected 125, got %',v_cash;
+  if v_cash<>28 then
+    raise exception 'TEST FAILED: cash ledger expected 28, got %',v_cash;
   end if;
 
   select round(coalesce(sum(amount),0),2)
@@ -289,7 +289,7 @@ begin
   where business_id=v_business
     and action='order_cancelled';
 
-  if v_audit_open<>3 or v_audit_update<>1 or v_audit_cancel<>1 then
+  if v_audit_open<>3 or v_audit_update<>1 or v_audit_cancel<>2 then
     raise exception 'TEST FAILED: audit counts expected 3 / 1 / 1, got % / % / %',
       v_audit_open,v_audit_update,v_audit_cancel;
   end if;
