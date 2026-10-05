@@ -28,6 +28,7 @@ create table if not exists public.kds_operational_alerts(
  constraint kds_operational_alerts_business_dedupe_key_key unique(business_id,dedupe_key)
 );
 create index if not exists production_station_capacity_business_idx on public.production_station_capacity(business_id,station);
+create index if not exists production_station_capacity_updated_by_idx on public.production_station_capacity(updated_by);
 create index if not exists kds_operational_alerts_active_idx on public.kds_operational_alerts(business_id,active,last_triggered_at desc);
 alter table public.production_station_capacity enable row level security;
 alter table public.kds_operational_alerts enable row level security;
