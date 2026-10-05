@@ -81,9 +81,11 @@ begin
     raise exception 'TEST FAILED: invalid timezone accepted';
   end if;
 
+  set local role postgres;
   update public.business_memberships
   set role='cashier'
   where business_id=v_business and user_id=v_user;
+  set local role authenticated;
 
   begin
     perform public.update_business_settings(
