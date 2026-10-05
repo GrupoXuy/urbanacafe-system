@@ -61,6 +61,9 @@ type Metrics={
   throughput_per_hour:number;
   stations:StationMetric[];
 };
+type OperationalStation={station:Station;capacity_units:number;active:number;pending:number;preparing:number;ready:number;queue_work_seconds:number;estimated_wait_seconds:number;pressure_percent:number;capacity_tickets_per_hour:number;predicted_delay_count:number;max_predicted_delay_seconds:number};
+type OperationalAlert={id:string;station:Station;severity:"warning"|"critical";title:string;message:string;metric_value:number|null;threshold:number|null;last_triggered_at:string};
+type OperationalControl={stations:OperationalStation[];alerts:OperationalAlert[]};
 
 const stationLabel:Record<Station,string>={kitchen:"Cozinha",bar:"Bar"};
 const statusLabel:Record<TicketStatus,string>={pending:"Na fila",preparing:"Em preparo",ready:"Pronto",served:"Entregue"};
@@ -90,6 +93,7 @@ export default function KDS(){
   const [busy,setBusy]=useState("");
   const [now,setNow]=useState(Date.now());
   const [realtime,setRealtime]=useState(false);
+  const [control,setControl]=useState<OperationalControl>({stations:[],alerts:[]});
 
   const load=useCallback(async(targetBusiness=business)=>{
     if(!targetBusiness)return;
@@ -170,6 +174,13 @@ export default function KDS(){
     setMetrics((data||emptyMetrics) as Metrics);
   },[business]);
 
+  const loadControl=useCallback(async(targetBusiness=business)=>{
+    if(!targetBusiness)return;
+    const {data,error}=await createClient().rpc("get_kds_operational_control",{p_business_id:targetBusiness});
+    if(error){setMessage(error.message);return;}
+    setControl((data||{stations:[],alerts:[]}) as OperationalControl);
+  },[business]);
+
   useEffect(()=>{
     async function bootstrap(){
       const c=createClient();
@@ -179,11 +190,11 @@ export default function KDS(){
         .eq("user_id",user.id).eq("active",true).limit(1).maybeSingle();
       if(error||!m){setMessage(error?.message||"Negócio não encontrado");setLoading(false);return;}
       setBusiness(m.business_id);
-      await Promise.all([load(m.business_id),loadMetrics(m.business_id)]);
+      await Promise.all([load(m.business_id),loadMetrics(m.business_id),loadControl(m.business_id)]);
       setLoading(false);
     }
     bootstrap();
-  },[load,loadMetrics]);
+  },[load,loadMetrics,loadControl]);
 
   useEffect(()=>{
     if(!business)return;
@@ -197,6 +208,7 @@ export default function KDS(){
       },()=>{
         void load(business);
         void loadMetrics(business);
+        void loadControl(business);
       })
       .subscribe((status)=>{
         setRealtime(status==="SUBSCRIBED");
@@ -205,6 +217,7 @@ export default function KDS(){
     const fallback=setInterval(()=>{
       void load(business);
       void loadMetrics(business);
+      void loadControl(business);
     },30000);
 
     return ()=>{
@@ -212,7 +225,7 @@ export default function KDS(){
       void c.removeChannel(channel);
       setRealtime(false);
     };
-  },[business,load,loadMetrics]);
+  },[business,load,loadMetrics,loadControl]);
 
   useEffect(()=>{
     const timer=setInterval(()=>setNow(Date.now()),1000);
@@ -266,6 +279,7 @@ export default function KDS(){
   }),[visible]);
 
   const stationMetric=(station:Station)=>metrics.stations.find(s=>s.station===station);
+  const operationalStation=(station:Station)=>control.stations.find(s=>s.station===station);
 
   if(loading)return <main className="main"><p>Carregando KDS operacional...</p></main>;
 
@@ -283,6 +297,7 @@ export default function KDS(){
     </div>
 
     {message&&<div className="notice">{message}</div>}
+    {control.alerts.length>0&&<section className="section"><div className="card"><h2 style={{marginTop:0}}>Alertas operacionais</h2><div style={{display:"grid",gap:8}}>{control.alerts.map(a=><div key={a.id} style={{border:"1px solid #ddd",borderLeft:"5px solid #151515",borderRadius:9,padding:12}}><div style={{display:"flex",justifyContent:"space-between",gap:10,flexWrap:"wrap"}}><b>{a.title}</b><span className="label">{a.severity==="critical"?"CRÍTICO":"ATENÇÃO"}</span></div><div className="subtitle" style={{marginTop:4}}>{a.message}</div></div>)}</div></div></section>}
 
     <div className="grid">
       <div className="card"><div className="label">Fila ativa</div><div className="value">{metrics.active}</div><div className="subtitle">{metrics.pending} aguardando · {metrics.preparing} em preparo</div></div>
@@ -317,6 +332,7 @@ export default function KDS(){
       {(["kitchen","bar"] as Station[]).map(station=>{
         const list=grouped[station];
         const sm=stationMetric(station);
+        const oc=operationalStation(station);
         if(filter!=="all"&&filter!==station)return null;
         return <section key={station} className="card">
           <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",marginBottom:12}}>
@@ -327,6 +343,8 @@ export default function KDS(){
             <div style={{textAlign:"right"}}>
               <b>{sm?.delayed||0} atrasados</b>
               <div className="subtitle">{sm?.pending||0} aguardando · {sm?.preparing||0} preparando</div>
+              {oc&&<div className="subtitle">Pressão {oc.pressure_percent.toFixed(0)}% · capacidade {oc.capacity_units} slot(s)/{oc.capacity_tickets_per_hour.toFixed(1)} t/h</div>}
+              {oc&&oc.predicted_delay_count>0&&<div className="subtitle">Atraso previsto: {oc.predicted_delay_count} · máx. {formatDuration(oc.max_predicted_delay_seconds)}</div>}
             </div>
           </div>
 
