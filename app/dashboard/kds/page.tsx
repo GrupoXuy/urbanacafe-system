@@ -5,7 +5,7 @@ import Link from "next/link";
 import {createClient} from "@/lib/supabase-browser";
 
 type Station="kitchen"|"bar";
-type TicketStatus="pending"|"preparing"|"ready";
+type TicketStatus="pending"|"preparing"|"ready"|"served";
 type Ticket={
   id:string;
   sale_id:string;
