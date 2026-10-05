@@ -148,7 +148,7 @@ returns public.sales
 language plpgsql
 security definer
 set search_path=''
-as $
+as $create_sale$
 declare
   v_sale public.sales%rowtype;
   v_item jsonb;
@@ -256,7 +256,7 @@ exception
   when invalid_text_representation then
     raise exception 'Produto inválido na venda';
 end;
-$;
+$create_sale$;
 
 create or replace function private.create_open_order_transaction(
   p_business_id uuid,
