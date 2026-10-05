@@ -27,11 +27,15 @@ type OpenOrder={
   cafe_tables?:{name:string}|null;
   customers?:{name:string}|null;
 };
+type OpenOrderQuery=Omit<OpenOrder,"cafe_tables"|"customers">&{
+  cafe_tables?:{name:string}[]|null;
+  customers?:{name:string}[]|null;
+};
 type OrderLine={
   product_id:string;
   quantity:number;
   unit_price:number;
-  products?:{name:string}|null;
+  products?:{name:string}[]|null;
 };
 
 const paymentMethods=[
@@ -113,7 +117,12 @@ export default function Comandas(){
       return;
     }
 
-    setOrders((data||[]) as OpenOrder[]);
+    const normalized=(data||[] as OpenOrderQuery[]).map(order=>({
+      ...order,
+      cafe_tables:order.cafe_tables?.[0]||null,
+      customers:order.customers?.[0]||null
+    }));
+    setOrders(normalized);
   }
 
   useEffect(()=>{loadBase()},[]);
@@ -181,7 +190,7 @@ export default function Comandas(){
       const product=products.find(p=>p.id===line.product_id);
       return {
         id:line.product_id,
-        name:line.products?.name||"Produto",
+        name:line.products?.[0]?.name||"Produto",
         sale_price:Number(line.unit_price||0),
         stock_quantity:Number(product?.stock_quantity||0),
         is_stock_item:Boolean(product?.is_stock_item),
