@@ -150,7 +150,7 @@ begin
     0
   );
 
-  select status into v_ticket_b
+  select * into v_ticket_b
   from public.production_tickets
   where id=v_ticket_b.id;
 
