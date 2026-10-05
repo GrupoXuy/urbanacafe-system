@@ -1,6 +1,5 @@
 -- Urbana Café: operational RPC compatibility after private-schema isolation.
--- All fixtures are created before switching to the authenticated role and are
--- rolled back with the transaction.
+-- All fixtures are rolled back with the transaction.
 
 begin;
 
@@ -72,11 +71,103 @@ begin
     raise exception 'TEST FAILED: open_cash_session wrapper failed';
   end if;
 
-  perform public.record_cash_movement(v_business,v_session,'deposit',5,'Teste depósito');
-  perform public.record_cash_movement(v_business,v_session,'withdrawal',2,'Teste retirada');
+  perform public.record_cash_movement(
+    v_business,v_session,'deposit',5,'Teste depósito'
+  );
 
-  select status into v_status
-  from public.close_cash_session(v_session,95,'Compatibilidade');
+  perform public.record_cash_movement(
+    v_business,v_session,'withdrawal',2,'Teste retirada'
+  );
+
+  select * into v_sale
+  from public.create_sale_transaction(
+    v_business,
+    v_session,
+    v_customer,
+    v_table,
+    'Compatibilidade RPC privada',
+    'cash',
+    jsonb_build_array(jsonb_build_object('product_id',v_product,'quantity',2)),
+    0
+  );
+
+  if v_sale.status<>'completed' or round(v_sale.total,2)<>20 then
+    raise exception 'TEST FAILED: create_sale_transaction wrapper failed';
+  end if;
+
+  select stock_quantity into v_stock
+  from public.products where id=v_product;
+
+  if v_stock<>8 then
+    raise exception 'TEST FAILED: sale stock expected 8, got %',v_stock;
+  end if;
+
+  select * into v_sale
+  from public.refund_sale_transaction(v_sale.id,'Compatibilidade RPC privada');
+
+  if v_sale.status<>'refunded' then
+    raise exception 'TEST FAILED: refund_sale_transaction wrapper failed';
+  end if;
+
+  select stock_quantity into v_stock
+  from public.products where id=v_product;
+
+  if v_stock<>10 then
+    raise exception 'TEST FAILED: refund stock expected 10, got %',v_stock;
+  end if;
+
+  select * into v_purchase
+  from public.create_purchase_transaction(
+    v_business,
+    v_supplier,
+    'TEST-PRIVATE-001',
+    'cash',
+    jsonb_build_array(
+      jsonb_build_object('product_id',v_product,'quantity',5,'unit_cost',3)
+    )
+  );
+
+  if v_purchase.status<>'posted' or round(v_purchase.total,2)<>15 then
+    raise exception 'TEST FAILED: create_purchase_transaction wrapper failed';
+  end if;
+
+  select stock_quantity into v_stock
+  from public.products where id=v_product;
+
+  if v_stock<>15 then
+    raise exception 'TEST FAILED: purchase stock expected 15, got %',v_stock;
+  end if;
+
+  perform public.record_expense(
+    v_business,'Teste despesa privada','Teste',3,current_date,'cash'
+  );
+
+  select *
+  into v_reservation
+  from public.create_reservation_transaction(
+    v_business,
+    v_customer,
+    v_table,
+    now()+interval '1 day',
+    2,
+    'Compatibilidade'
+  );
+
+  if v_reservation.status<>'pending' then
+    raise exception 'TEST FAILED: reservation creation wrapper failed';
+  end if;
+
+  select status
+  into v_status
+  from public.update_reservation_status(v_reservation.id,'confirmed');
+
+  if v_status<>'confirmed' then
+    raise exception 'TEST FAILED: reservation status wrapper failed';
+  end if;
+
+  select status
+  into v_status
+  from public.close_cash_session(v_session,85,'Compatibilidade');
 
   if v_status<>'closed' then
     raise exception 'TEST FAILED: close_cash_session wrapper failed';
@@ -87,8 +178,8 @@ begin
   from public.cash_movements
   where cash_session_id=v_session;
 
-  if v_cash<>95 then
-    raise exception 'TEST FAILED: cash expected 95, got %',v_cash;
+  if v_cash<>85 then
+    raise exception 'TEST FAILED: cash expected 85, got %',v_cash;
   end if;
 
   select count(*) into v_wrappers
