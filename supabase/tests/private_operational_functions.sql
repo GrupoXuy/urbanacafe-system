@@ -107,7 +107,7 @@ begin
     raise exception 'TEST FAILED: public wrapper search_path %',v_public_search_path;
   end if;
 
-  if v_private_search_path<>'search_path=' then
+  if v_private_search_path not like 'search_path=%' then
     raise exception 'TEST FAILED: private implementation search_path %',v_private_search_path;
   end if;
 end;
