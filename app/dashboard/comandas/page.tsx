@@ -227,7 +227,14 @@ export default function Comandas(){
       return null;
     }
 
-    const id=(result.data as {id:string}).id;
+    const data=result.data as {id:string}|null;
+    if(!data?.id){
+      setMessage("A comanda foi processada, mas o servidor não retornou o identificador.");
+      setSaving(false);
+      return null;
+    }
+
+    const id=data.id;
     setEditingId(id);
     setDirty(false);
     await loadOrders();
@@ -249,11 +256,13 @@ export default function Comandas(){
 
     let id=editingId;
     if(!id){
-      id=await persistOrder();
-      if(!id)return;
+      const persistedId=await persistOrder();
+      if(!persistedId)return;
+      id=persistedId;
     }else if(dirty){
-      id=await persistOrder();
-      if(!id)return;
+      const persistedId=await persistOrder();
+      if(!persistedId)return;
+      id=persistedId;
     }
 
     setSaving(true);
