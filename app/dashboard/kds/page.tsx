@@ -224,7 +224,7 @@ export default function KDS(){
       <Link href="/dashboard/comandas/imprimir" className="btn" style={{width:"auto",textDecoration:"none",marginLeft:"auto"}}>Impressão operacional</Link>
     </div>
 
-    <div className="section" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
+    <div className="section kds-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
       {visible.map(ticket=>{
         const canStart=ticket.status==="pending";
         const canReady=ticket.status==="preparing";
