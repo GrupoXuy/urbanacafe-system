@@ -37,7 +37,7 @@ type Line={
 type Card=Ticket&{sale:Sale;items:Line[]};
 
 const stationLabel:Record<Station,string>={kitchen:"Cozinha",bar:"Bar"};
-const statusLabel:Record<TicketStatus,string>={pending:"Na fila",preparing:"Em preparo",ready:"Pronto"};
+const statusLabel:Record<TicketStatus,string>={pending:"Na fila",preparing:"Em preparo",ready:"Pronto",served:"Entregue"};
 
 const money=(value:number)=>"UYU "+Number(value||0).toFixed(2);
 
