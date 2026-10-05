@@ -83,6 +83,7 @@ export default function Dashboard(){
           <tbody>
             {[
               ["POS","Operacional","/dashboard/pos","Abrir vendas"],
+              ["Comandas","Operacional","/dashboard/comandas","Gerenciar atendimento"],
               ["Histórico de vendas","Operacional","/dashboard/vendas","Consultar e estornar vendas"],
               ["Caixa","Operacional","/dashboard/caixa","Gerenciar caixa"],
               ["Estoque","Operacional","/dashboard/estoque","Consultar estoque"],
