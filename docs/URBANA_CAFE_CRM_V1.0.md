@@ -71,6 +71,23 @@ Na finalização:
 - o custo do item é atualizado para o custo médio vigente no início do fechamento;
 - eventos de abertura, edição e cancelamento entram na auditoria.
 
+### Produção / KDS
+
+`create_open_order → production_tickets → preparing → ready → served`
+
+- produtos possuem estação de produção: `none`, `kitchen` ou `bar`;
+- ao abrir ou editar uma comanda, os tickets necessários são sincronizados;
+- pedidos que já entraram em produção não podem ter seus itens alterados;
+- a exclusão de uma estação ainda em fila cancela somente o ticket pendente;
+- o ticket de produção é independente do pagamento: uma venda pode estar paga e continuar em preparo;
+- transições de produção são monotônicas e auditadas;
+- vendas imediatas do POS também geram tickets quando o produto exige produção;
+- a tela KDS atualiza automaticamente e permite impressão do ticket.
+
+### Impressão operacional
+
+A impressão usa uma página dedicada com layout de ticket de 80 mm e CSS específico para mídia de impressão. Não há dependência de impressora física ou serviço externo para o primeiro estágio.
+
 ### Estorno
 
 `refund_sale_transaction`
@@ -141,6 +158,7 @@ Os testes SQL ficam em:
 - `supabase/tests/operational_security.sql`
 - `supabase/tests/inventory_operational_reports.sql`
 - `supabase/tests/comandas_atendimento.sql`
+- `supabase/tests/kds_cozinha_bar.sql`
 
 A suíte operacional foi executada no banco do projeto e passou, incluindo:
 - RLS e isolamento entre negócios;
@@ -162,7 +180,7 @@ A base operacional está em produção no projeto Vercel `urbanacafe-system`, li
 ## Próximas prioridades
 
 1. Integrar testes SQL a um banco/branch próprio para CI.
-2. Evoluir atendimento para impressão/KDS e operação de cozinha/bar.
+2. Evoluir cozinha/bar com filas dedicadas, prioridades e métricas de tempo.
 3. Adicionar integrações externas conforme necessidade operacional.
 4. Ampliar automações e refinamentos de UX.
 
