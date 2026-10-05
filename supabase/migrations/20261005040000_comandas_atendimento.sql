@@ -583,6 +583,11 @@ revoke all on function private.update_open_order_transaction(uuid,uuid,uuid,text
 revoke all on function private.close_open_order_transaction(uuid,uuid,public.payment_method) from public,anon;
 revoke all on function private.cancel_open_order_transaction(uuid,text) from public,anon;
 
+grant execute on function private.create_open_order_transaction(uuid,uuid,uuid,text,jsonb,numeric) to authenticated;
+grant execute on function private.update_open_order_transaction(uuid,uuid,uuid,text,jsonb,numeric) to authenticated;
+grant execute on function private.close_open_order_transaction(uuid,uuid,public.payment_method) to authenticated;
+grant execute on function private.cancel_open_order_transaction(uuid,text) to authenticated;
+
 revoke all on function public.create_open_order(uuid,uuid,uuid,text,jsonb,numeric) from public,anon;
 revoke all on function public.update_open_order(uuid,uuid,uuid,text,jsonb,numeric) from public,anon;
 revoke all on function public.close_open_order(uuid,uuid,public.payment_method) from public,anon;
