@@ -116,7 +116,9 @@ O navegador não escreve diretamente nos livros transacionais principais. As ope
 
 Views expostas de relatórios usam `security_invoker=true` para preservar a aplicação das políticas RLS das tabelas subjacentes.
 
-Há avisos do Supabase Advisor para funções `SECURITY DEFINER` executáveis por usuários autenticados. Eles precisam continuar sendo avaliados porque algumas dessas funções são deliberadamente endpoints RPC, enquanto `has_business_role` e `is_business_member` são helpers internos que podem ser isolados posteriormente em schema não exposto.
+As funções operacionais privilegiadas ficam no schema não exposto `private`, com `search_path=""`; as RPCs públicas são wrappers `SECURITY INVOKER` e aceitam somente `authenticated`.
+
+O único aviso restante do Supabase Advisor é a proteção contra senhas comprometidas no Supabase Auth, que depende da configuração de segurança do Auth e não está disponível para alteração pelo conector atual.
 
 ## Testes
 
