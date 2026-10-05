@@ -8,7 +8,7 @@ const money=(value:number)=>"UYU "+Number(value||0).toFixed(2);
 const links=[
   ["Dashboard","/dashboard"],["Vendas / POS","/dashboard/pos"],["Histórico de vendas","/dashboard/vendas"],["Caixa","/dashboard/caixa"],["Estoque","/dashboard/estoque"],
   ["Produtos","/dashboard/produtos"],["Fichas técnicas","/dashboard/receitas"],["Compras","/dashboard/compras"],["Fornecedores","/dashboard/fornecedores"],["Despesas","/dashboard/despesas"],["Clientes","/dashboard/clientes"],
-  ["Mesas","/dashboard/mesas"],["Reservas","/dashboard/reservas"],["Relatórios","/dashboard/relatorios"],["Funcionários","/dashboard/funcionarios"]
+  ["Mesas","/dashboard/mesas"],["Reservas","/dashboard/reservas"],["Relatórios","/dashboard/relatorios"],["Funcionários","/dashboard/funcionarios"],["Configurações","/dashboard/configuracoes"]
 ];
 
 export default function Dashboard(){
@@ -109,7 +109,8 @@ export default function Dashboard(){
               ["Mesas","Operacional","/dashboard/mesas","Gerenciar mesas"],
               ["Reservas","Operacional","/dashboard/reservas","Gerenciar reservas"],
               ["Relatórios","Gerencial","/dashboard/relatorios","Ver resultados"],
-              ["Funcionários","Administrativo","/dashboard/funcionarios","Gerenciar equipe"]
+              ["Funcionários","Administrativo","/dashboard/funcionarios","Gerenciar equipe"],
+              ["Configurações","Administrativo","/dashboard/configuracoes","Configurar negócio"]
             ].map(([module,status,href,action])=><tr key={module}><td>{module}</td><td>{status}</td><td><Link href={href}>{action}</Link></td></tr>)}
           </tbody>
         </table>
