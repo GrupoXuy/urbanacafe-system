@@ -75,6 +75,13 @@ begin
   values(v_business,'TEST Comanda Product B','UN',5,3,3,1,true,true,true)
   returning id into v_product_b;
 
+  set local role authenticated;
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub',v_user::text,'role','authenticated')::text,
+    true
+  );
+
   select id
     into v_session
   from public.open_cash_session(v_business,100);
@@ -82,13 +89,6 @@ begin
   if v_session is null then
     raise exception 'TEST FAILED: cash session could not be opened';
   end if;
-
-  set local role authenticated;
-  perform set_config(
-    'request.jwt.claims',
-    json_build_object('sub',v_user::text,'role','authenticated')::text,
-    true
-  );
 
   select *
     into v_order
