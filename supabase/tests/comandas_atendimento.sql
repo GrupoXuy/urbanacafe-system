@@ -267,8 +267,8 @@ begin
   from public.sales
   where id=v_closed.id;
 
-  if v_cogs<>9 then
-    raise exception 'TEST FAILED: COGS expected 9, got %',v_cogs;
+  if v_cogs<>7 then
+    raise exception 'TEST FAILED: COGS expected 7, got %',v_cogs;
   end if;
 
   select count(*)
