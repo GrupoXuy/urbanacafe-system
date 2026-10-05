@@ -117,7 +117,8 @@ export default function Comandas(){
       return;
     }
 
-    const normalized=(data||[] as OpenOrderQuery[]).map(order=>({
+    const rows=(data||[]) as unknown as OpenOrderQuery[];
+    const normalized:OpenOrder[]=rows.map(order=>({
       ...order,
       cafe_tables:order.cafe_tables?.[0]||null,
       customers:order.customers?.[0]||null
