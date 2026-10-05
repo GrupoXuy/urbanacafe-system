@@ -44,7 +44,6 @@ export default function Dashboard(){
     load();
   },[]);
 
-  async function logout(){await createClient().auth.signOut();location.href="/login"}
   if(loading)return <main className="main"><p>Carregando...</p></main>;
 
   const revenue=Number(metrics?.revenue||0);
@@ -55,7 +54,7 @@ export default function Dashboard(){
   const expenses=Number(metrics?.expenses||0);
   const stockValue=Number(metrics?.stock_value||0);
 
-<main className="main">
+  return <main className="main">
       <div className="topbar"><div><h1 className="title">Dashboard</h1><div className="subtitle">Visão geral da operação — hoje</div></div><div>{email}</div></div>
       <div className="grid">
         {[
