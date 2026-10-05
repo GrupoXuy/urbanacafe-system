@@ -65,7 +65,6 @@ type Metrics={
 const stationLabel:Record<Station,string>={kitchen:"Cozinha",bar:"Bar"};
 const statusLabel:Record<TicketStatus,string>={pending:"Na fila",preparing:"Em preparo",ready:"Pronto",served:"Entregue"};
 const priorityLabel:Record<Priority,string>={low:"Baixa",normal:"Normal",high:"Alta",urgent:"Urgente"};
-const priorityOrder:Record<Priority,number>={urgent:4,high:3,normal:2,low:1};
 
 const emptyMetrics:Metrics={
   active:0,pending:0,preparing:0,ready:0,delayed:0,served:0,
@@ -296,7 +295,7 @@ export default function KDS(){
       <div className="card"><div className="label">Espera média</div><div className="value">{formatDuration(metrics.avg_wait_seconds)}</div><div className="subtitle">entrada → início do preparo</div></div>
       <div className="card"><div className="label">Tempo total médio</div><div className="value">{formatDuration(metrics.avg_total_seconds)}</div><div className="subtitle">entrada → entrega</div></div>
       <div className="card"><div className="label">Prontos aguardando</div><div className="value">{metrics.ready}</div><div className="subtitle">produção concluída</div></div>
-      <div className="card"><div className="label">Performance</div><div className="value">{metrics.served?Math.max(0,Math.round(100*(1-(metrics.delayed/Math.max(metrics.active+metrics.served,1))))):"—"}%</div><div className="subtitle">indicador operacional atual</div></div>
+      <div className="card"><div className="label">SLA atual</div><div className="value">{metrics.active?Math.max(0,Math.round(100*(1-(metrics.delayed/metrics.active)))):"—"}%</div><div className="subtitle">fila ativa dentro do tempo-alvo</div></div>
     </div>
 
     <div className="section" style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
