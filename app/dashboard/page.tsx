@@ -3,6 +3,8 @@ import {useEffect,useState} from "react";
 import Link from "next/link";
 import {createClient} from "@/lib/supabase-browser";
 
+const money=(value:number)=>"UYU "+Number(value||0).toFixed(2);
+
 const links=[
   ["Dashboard","/dashboard"],["Vendas / POS","/dashboard/pos"],["Histórico de vendas","/dashboard/vendas"],["Caixa","/dashboard/caixa"],["Estoque","/dashboard/estoque"],
   ["Produtos","/dashboard/produtos"],["Fichas técnicas","/dashboard/receitas"],["Compras","/dashboard/compras"],["Fornecedores","/dashboard/fornecedores"],["Despesas","/dashboard/despesas"],["Clientes","/dashboard/clientes"],
@@ -12,7 +14,24 @@ const links=[
 export default function Dashboard(){
   const [email,setEmail]=useState("");
   const [loading,setLoading]=useState(true);
-  const [metrics,setMetrics]=useState<any>(null);
+  type DashboardMetrics={
+    business_id:string;
+    report_date:string;
+    revenue:number;
+    cogs:number;
+    sales_count:number;
+    refunds_count:number;
+    expenses:number;
+    gross_profit:number;
+    net_profit:number;
+    stock_value:number;
+    stock_items:number;
+    low_stock_count:number;
+    out_of_stock_count:number;
+    open_cash_sessions:number;
+  };
+
+  const [metrics,setMetrics]=useState<DashboardMetrics|null>(null);
 
   useEffect(()=>{
     async function load(){
@@ -36,7 +55,11 @@ export default function Dashboard(){
 
   const revenue=Number(metrics?.revenue||0);
   const cogs=Number(metrics?.cogs||0);
-  const gross=revenue-cogs;
+  const gross=Number(metrics?.gross_profit||0);
+  const net=Number(metrics?.net_profit||0);
+  const refunds=Number(metrics?.refunds_count||0);
+  const expenses=Number(metrics?.expenses||0);
+  const stockValue=Number(metrics?.stock_value||0);
 
   return <div className="shell">
     <aside className="sidebar">
@@ -48,8 +71,24 @@ export default function Dashboard(){
     <main className="main">
       <div className="topbar"><div><h1 className="title">Dashboard</h1><div className="subtitle">Visão geral da operação — hoje</div></div><div>{email}</div></div>
       <div className="grid">
-        {[["Faturamento","UYU "+revenue.toFixed(2)],["CMV","UYU "+cogs.toFixed(2)],["Lucro bruto","UYU "+gross.toFixed(2)],["Vendas",String(metrics?.sales_count||0)]].map(([label,value])=><div className="card" key={label}><div className="label">{label}</div><div className="value">{value}</div></div>)}
+        {[
+          ["Faturamento",money(revenue)],
+          ["CMV",money(cogs)],
+          ["Lucro bruto",money(gross)],
+          ["Lucro líquido",money(net)],
+          ["Despesas",money(expenses)],
+          ["Vendas",String(metrics?.sales_count||0)],
+          ["Estornos",String(refunds)],
+          ["Valor do estoque",money(stockValue)],
+          ["Itens em estoque",String(metrics?.stock_items||0)],
+          ["Abaixo do mínimo",String(metrics?.low_stock_count||0)],
+          ["Sem estoque",String(metrics?.out_of_stock_count||0)],
+          ["Caixas abertos",String(metrics?.open_cash_sessions||0)]
+        ].map(([label,value])=><div className="card" key={label}><div className="label">{label}</div><div className="value">{value}</div></div>)}
       </div>
+
+      {(Number(metrics?.low_stock_count||0)>0 || Number(metrics?.out_of_stock_count||0)>0) &&
+        <div className="notice">Atenção: {Number(metrics?.out_of_stock_count||0)} item(ns) sem estoque e {Number(metrics?.low_stock_count||0)} item(ns) abaixo do mínimo. <Link href="/dashboard/estoque">Revisar estoque</Link></div>}
 
       <div className="section">
         <h2>Operação</h2>
