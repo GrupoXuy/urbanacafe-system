@@ -344,7 +344,7 @@ export default function KDS(){
               <b>{sm?.delayed||0} atrasados</b>
               <div className="subtitle">{sm?.pending||0} aguardando · {sm?.preparing||0} preparando</div>
               {oc&&<div className="subtitle">Pressão {oc.pressure_percent.toFixed(0)}% · capacidade {oc.capacity_units} slot(s)/{oc.capacity_tickets_per_hour.toFixed(1)} t/h</div>}
-              {oc&&oc.predicted_delay_count>0&&<div className="subtitle">Atraso previsto: {oc.predicted_delay_count} · máx. {formatDuration(oc.max_predicted_delay_seconds)}</div>
+              {oc&&oc.predicted_delay_count>0&&<div className="subtitle">Atraso previsto: {oc.predicted_delay_count} · máx. {formatDuration(oc.max_predicted_delay_seconds)}</div>}
             </div>
           </div>
 
