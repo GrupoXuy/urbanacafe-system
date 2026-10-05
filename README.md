@@ -84,16 +84,23 @@ Branch de produção: `main`
 
 O CI valida Node 22.14.0, instalação via `npm ci`, typecheck, lint e build. Os testes SQL existentes devem ser promovidos para a pipeline automatizada quando houver um banco de teste/branch próprio para CI.
 
-## Próxima linha de implementação
+## Estado de conclusão
 
-A prioridade agora é estabilizar a operação ponta a ponta antes de aumentar o escopo visual:
+A operação ponta a ponta principal está implementada e validada em produção: POS, caixa, compras, estoque, receitas, reservas, estornos, relatórios financeiros/pagamentos, dashboard operacional, configurações do negócio, auditoria e navegação compartilhada.
 
-1. validar cenários reais de POS, caixa, compra, estoque, reserva e estorno;
-2. ampliar cobertura automatizada dos fluxos transacionais;
-3. concluir a segurança das funções auxiliares expostas no schema `public`;
-4. evoluir o Dashboard para usar os mesmos indicadores operacionais dos Relatórios;
-5. criar configurações do negócio, parâmetros de operação e preferências;
-6. depois disso, avançar para integrações externas, impressão/comandas e automações.
+A camada de funções privilegiadas foi isolada em schema `private`, mantendo wrappers públicos `SECURITY INVOKER`. O projeto usa a convenção `proxy.ts` do Next.js 16 e Node `22.14.0` de forma determinística.
+
+## Pendências externas
+
+1. Ativar Leaked Password Protection no Supabase Auth.
+2. Configurar um banco descartável/branch para executar os `supabase/tests/` automaticamente no CI.
+3. Ativar proteção server-side da branch `main` no GitHub, pois o conector atual não expõe essa mutação.
+
+Esses itens não impedem a operação atual; os builds do Vercel e os testes transacionais executados no Supabase foram validados durante as fases de implementação.
+
+## Próxima evolução
+
+Depois do núcleo concluído, o próximo escopo é incremental: integrações externas, impressão/comandas, automações e refinamentos de UX conforme necessidade operacional.
 
 ## Regra de evolução
 
