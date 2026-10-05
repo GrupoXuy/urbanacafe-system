@@ -75,7 +75,7 @@ begin
     ])
     and has_function_privilege('anon',p.oid,'EXECUTE');
 
-  select config[1]
+  select p.proconfig[1]
     into v_public_search_path
   from pg_proc p
   join pg_namespace n on n.oid=p.pronamespace
@@ -83,7 +83,7 @@ begin
     and p.proname='create_sale_transaction'
   limit 1;
 
-  select config[1]
+  select p.proconfig[1]
     into v_private_search_path
   from pg_proc p
   join pg_namespace n on n.oid=p.pronamespace
