@@ -84,6 +84,7 @@ export default function Dashboard(){
             {[
               ["POS","Operacional","/dashboard/pos","Abrir vendas"],
               ["Comandas","Operacional","/dashboard/comandas","Gerenciar atendimento"],
+              ["KDS Cozinha/Bar","Operacional","/dashboard/kds","Acompanhar produção"],
               ["Histórico de vendas","Operacional","/dashboard/vendas","Consultar e estornar vendas"],
               ["Caixa","Operacional","/dashboard/caixa","Gerenciar caixa"],
               ["Estoque","Operacional","/dashboard/estoque","Consultar estoque"],

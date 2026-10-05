@@ -8,6 +8,7 @@ const links=[
   ["Dashboard","/dashboard"],
   ["Vendas / POS","/dashboard/pos"],
   ["Comandas","/dashboard/comandas"],
+  ["KDS Cozinha/Bar","/dashboard/kds"],
   ["Histórico de vendas","/dashboard/vendas"],
   ["Caixa","/dashboard/caixa"],
   ["Estoque","/dashboard/estoque"],
