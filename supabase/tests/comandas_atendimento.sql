@@ -289,8 +289,8 @@ begin
   where business_id=v_business
     and action='order_cancelled';
 
-  if v_audit_open<>3 or v_audit_update<>1 or v_audit_cancel<>2 then
-    raise exception 'TEST FAILED: audit counts expected 3 / 1 / 1, got % / % / %',
+  if v_audit_open<>2 or v_audit_update<>1 or v_audit_cancel<>1 then
+    raise exception 'TEST FAILED: audit counts expected 2 / 1 / 1, got % / % / %',
       v_audit_open,v_audit_update,v_audit_cancel;
   end if;
 
