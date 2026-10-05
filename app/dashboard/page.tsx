@@ -5,12 +5,6 @@ import {createClient} from "@/lib/supabase-browser";
 
 const money=(value:number)=>"UYU "+Number(value||0).toFixed(2);
 
-const links=[
-  ["Dashboard","/dashboard"],["Vendas / POS","/dashboard/pos"],["Histórico de vendas","/dashboard/vendas"],["Caixa","/dashboard/caixa"],["Estoque","/dashboard/estoque"],
-  ["Produtos","/dashboard/produtos"],["Fichas técnicas","/dashboard/receitas"],["Compras","/dashboard/compras"],["Fornecedores","/dashboard/fornecedores"],["Despesas","/dashboard/despesas"],["Clientes","/dashboard/clientes"],
-  ["Mesas","/dashboard/mesas"],["Reservas","/dashboard/reservas"],["Relatórios","/dashboard/relatorios"],["Funcionários","/dashboard/funcionarios"],["Configurações","/dashboard/configuracoes"]
-];
-
 export default function Dashboard(){
   const [email,setEmail]=useState("");
   const [loading,setLoading]=useState(true);
@@ -61,14 +55,7 @@ export default function Dashboard(){
   const expenses=Number(metrics?.expenses||0);
   const stockValue=Number(metrics?.stock_value||0);
 
-  return <div className="shell">
-    <aside className="sidebar">
-      <div className="brand">URBANA <span>CAFÉ</span></div>
-      <nav className="nav">{links.map(([label,href])=><Link className={label==="Dashboard"?"active":""} key={label} href={href}>{label}</Link>)}</nav>
-      <button onClick={logout} style={{marginTop:24,width:"100%",padding:10,borderRadius:8,border:"1px solid #555",background:"#151515",color:"#fff",cursor:"pointer"}}>Sair</button>
-    </aside>
-
-    <main className="main">
+<main className="main">
       <div className="topbar"><div><h1 className="title">Dashboard</h1><div className="subtitle">Visão geral da operação — hoje</div></div><div>{email}</div></div>
       <div className="grid">
         {[
@@ -116,5 +103,3 @@ export default function Dashboard(){
         </table>
       </div>
     </main>
-  </div>
-}
