@@ -20,6 +20,8 @@ Fluxos centrais:
 
 `Estorno → histórico preservado → reversão de estoque → devolução financeira conforme meio de pagamento`
 
+`Comanda → venda aberta → edição → fechamento → pagamento + caixa + estoque + CMV`
+
 ## Estado atual
 
 A base operacional principal está implementada em produção, incluindo:
@@ -27,12 +29,14 @@ A base operacional principal está implementada em produção, incluindo:
 - primeiro acesso e autenticação via Supabase Auth;
 - isolamento por `business_id` com RLS;
 - POS com cliente, mesa e meios de pagamento;
+- comandas abertas com edição, ocupação de mesa e fechamento transacional;
 - fechamento e reconciliação de caixa;
 - compras transacionais e custo médio ponderado;
 - cadastro de fornecedores;
 - produtos e estoque;
 - fichas técnicas com consumo automático de ingredientes;
 - histórico e estorno transacional de vendas;
+- ciclo de atendimento comanda → edição → cancelamento/fechamento;
 - reservas com validação de capacidade e concorrência;
 - despesas;
 - relatórios financeiros, pagamentos, caixa, estoque, produtos, perdas e ajustes;
@@ -86,7 +90,7 @@ O CI valida Node 22.14.0, instalação via `npm ci`, typecheck, lint e build. Os
 
 ## Estado de conclusão
 
-A operação ponta a ponta principal está implementada e validada em produção: POS, caixa, compras, estoque, receitas, reservas, estornos, relatórios financeiros/pagamentos, dashboard operacional, configurações do negócio, auditoria e navegação compartilhada.
+A operação ponta a ponta principal está implementada e validada em produção: POS, comandas, caixa, compras, estoque, receitas, reservas, estornos, relatórios financeiros/pagamentos, dashboard operacional, configurações do negócio, auditoria e navegação compartilhada.
 
 A camada de funções privilegiadas foi isolada em schema `private`, mantendo wrappers públicos `SECURITY INVOKER`. O projeto usa a convenção `proxy.ts` do Next.js 16 e Node `22.14.0` de forma determinística.
 
@@ -100,7 +104,7 @@ Esses itens não impedem a operação atual; os builds do Vercel e os testes tra
 
 ## Próxima evolução
 
-Depois do núcleo concluído, o próximo escopo é incremental: integrações externas, impressão/comandas, automações e refinamentos de UX conforme necessidade operacional.
+Depois do núcleo concluído, o próximo escopo é incremental: impressão/KDS e outras rotinas de atendimento, integrações externas, automações e refinamentos de UX conforme necessidade operacional.
 
 ## Regra de evolução
 

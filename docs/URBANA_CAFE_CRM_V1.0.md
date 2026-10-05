@@ -28,6 +28,7 @@ Sistema único para operação e gestão do Urbana Café, cobrindo POS, caixa, e
 
 - Dashboard
 - Vendas / POS
+- Comandas / Atendimento
 - Histórico e estorno de vendas
 - Caixa e reconciliação
 - Estoque
@@ -56,6 +57,19 @@ Na finalização:
 - registra movimentos de estoque;
 - registra somente a parcela em dinheiro no livro físico de caixa;
 - confirma a venda.
+
+### Comandas / Atendimento
+
+`create_open_order → update_open_order → close_open_order | cancel_open_order`
+
+- uma única comanda aberta por mesa;
+- a comanda permanece no estado `open` durante o atendimento;
+- alterar itens, cliente, mesa e observação não baixa estoque nem altera caixa;
+- cancelamento exige motivo, preserva o registro e libera a mesa;
+- fechamento exige caixa aberto, cria o pagamento e chama a finalização transacional;
+- fechamento baixa estoque/ingredientes, calcula CMV e registra dinheiro físico somente quando aplicável;
+- o custo do item é atualizado para o custo médio vigente no início do fechamento;
+- eventos de abertura, edição e cancelamento entram na auditoria.
 
 ### Estorno
 
@@ -126,6 +140,7 @@ Os testes SQL ficam em:
 
 - `supabase/tests/operational_security.sql`
 - `supabase/tests/inventory_operational_reports.sql`
+- `supabase/tests/comandas_atendimento.sql`
 
 A suíte operacional foi executada no banco do projeto e passou, incluindo:
 - RLS e isolamento entre negócios;
@@ -146,12 +161,10 @@ A base operacional está em produção no projeto Vercel `urbanacafe-system`, li
 
 ## Próximas prioridades
 
-1. Consolidar componentes compartilhados de navegação e layout.
-2. Integrar testes SQL a um banco/branch próprio para CI.
-3. Isolar helpers internos de autorização fora do schema exposto.
-4. Evoluir Dashboard com os indicadores gerenciais já disponíveis nos relatórios.
-5. Criar Configurações do negócio e parâmetros operacionais.
-6. Depois, avançar para integrações externas, impressão/comandas e automações.
+1. Integrar testes SQL a um banco/branch próprio para CI.
+2. Evoluir atendimento para impressão/KDS e operação de cozinha/bar.
+3. Adicionar integrações externas conforme necessidade operacional.
+4. Ampliar automações e refinamentos de UX.
 
 ## Regra de evolução
 

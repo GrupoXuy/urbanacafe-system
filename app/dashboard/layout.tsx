@@ -7,6 +7,7 @@ import {createClient} from "@/lib/supabase-browser";
 const links=[
   ["Dashboard","/dashboard"],
   ["Vendas / POS","/dashboard/pos"],
+  ["Comandas","/dashboard/comandas"],
   ["Histórico de vendas","/dashboard/vendas"],
   ["Caixa","/dashboard/caixa"],
   ["Estoque","/dashboard/estoque"],
