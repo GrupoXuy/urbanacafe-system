@@ -30,7 +30,7 @@ A base operacional principal está implementada em produção, incluindo:
 - isolamento por `business_id` com RLS;
 - POS com cliente, mesa e meios de pagamento;
 - comandas abertas com edição, ocupação de mesa e fechamento transacional;
-- KDS de cozinha/bar com roteamento por produto, estados de produção e atualização automática;
+- KDS operacional de cozinha/bar com roteamento por produto, prioridades, filas por estação, tempos-alvo, identificação de atraso, atualização em tempo real e indicadores de desempenho;
 - impressão operacional de comandas por ticket de 80 mm;
 - fechamento e reconciliação de caixa;
 - compras transacionais e custo médio ponderado;
@@ -95,7 +95,7 @@ O CI valida Node 22.14.0, instalação via `npm ci`, typecheck, lint e build. Os
 
 A operação ponta a ponta principal está implementada e validada em produção: POS, comandas, caixa, compras, estoque, receitas, reservas, estornos, relatórios financeiros/pagamentos, dashboard operacional, configurações do negócio, auditoria e navegação compartilhada.
 
-A camada de funções privilegiadas foi isolada em schema `private`, mantendo wrappers públicos `SECURITY INVOKER`. O projeto usa a convenção `proxy.ts` do Next.js 16 e Node `22.14.0` de forma determinística.
+A camada de funções privilegiadas foi isolada em schema `private`, mantendo wrappers públicos `SECURITY INVOKER`. O projeto usa a convenção `proxy.ts` do Next.js 16 e Node `22.14.0` de forma determinística. O KDS operacional usa `production_tickets` como fonte única de produção, com prioridade e tempo-alvo persistidos, métricas agregadas por estação e Supabase Realtime para atualização imediata.
 
 ## Pendências externas
 
@@ -107,7 +107,7 @@ Esses itens não impedem a operação atual; os builds do Vercel e os testes tra
 
 ## Próxima evolução
 
-Depois do núcleo concluído, o próximo escopo é incremental: refinamentos de cozinha/bar, integrações externas, automações e refinamentos de UX conforme necessidade operacional.
+Depois do núcleo concluído, a evolução incremental prioriza o KDS operacional: prioridades e SLA de produção, filas por estação, tempos de preparo, atraso, indicadores e automações de cozinha/bar, seguida por integrações externas e refinamentos de UX.
 
 ## Regra de evolução
 
