@@ -19,6 +19,10 @@ declare
   v_legal_name text;
   v_currency text;
   v_timezone text;
+  v_old_name text;
+  v_old_legal_name text;
+  v_old_currency text;
+  v_old_timezone text;
 begin
   if auth.uid() is null then
     raise exception 'Usuário não autenticado';
@@ -56,6 +60,11 @@ begin
     raise exception 'Negócio não encontrado ou inativo';
   end if;
 
+  v_old_name:=v_business.name;
+  v_old_legal_name:=v_business.legal_name;
+  v_old_currency:=v_business.currency;
+  v_old_timezone:=v_business.timezone;
+
   if not exists (
     select 1
     from public.business_memberships m
@@ -86,10 +95,10 @@ begin
     'business',
     v_business.id,
     jsonb_build_object(
-      'name',v_business.name,
-      'legal_name',v_business.legal_name,
-      'currency',v_business.currency,
-      'timezone',v_business.timezone
+      'name',v_old_name,
+      'legal_name',v_old_legal_name,
+      'currency',v_old_currency,
+      'timezone',v_old_timezone
     ),
     jsonb_build_object(
       'name',v_name,
