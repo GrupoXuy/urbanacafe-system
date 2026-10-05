@@ -30,6 +30,8 @@ A base operacional principal está implementada em produção, incluindo:
 - isolamento por `business_id` com RLS;
 - POS com cliente, mesa e meios de pagamento;
 - comandas abertas com edição, ocupação de mesa e fechamento transacional;
+- KDS de cozinha/bar com roteamento por produto, estados de produção e atualização automática;
+- impressão operacional de comandas por ticket de 80 mm;
 - fechamento e reconciliação de caixa;
 - compras transacionais e custo médio ponderado;
 - cadastro de fornecedores;
@@ -37,6 +39,7 @@ A base operacional principal está implementada em produção, incluindo:
 - fichas técnicas com consumo automático de ingredientes;
 - histórico e estorno transacional de vendas;
 - ciclo de atendimento comanda → edição → cancelamento/fechamento;
+- produção cozinha/bar derivada da mesma comanda, sem duplicação de pedidos;
 - reservas com validação de capacidade e concorrência;
 - despesas;
 - relatórios financeiros, pagamentos, caixa, estoque, produtos, perdas e ajustes;
@@ -104,7 +107,7 @@ Esses itens não impedem a operação atual; os builds do Vercel e os testes tra
 
 ## Próxima evolução
 
-Depois do núcleo concluído, o próximo escopo é incremental: impressão/KDS e outras rotinas de atendimento, integrações externas, automações e refinamentos de UX conforme necessidade operacional.
+Depois do núcleo concluído, o próximo escopo é incremental: refinamentos de cozinha/bar, integrações externas, automações e refinamentos de UX conforme necessidade operacional.
 
 ## Regra de evolução
 
