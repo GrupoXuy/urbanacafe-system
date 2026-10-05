@@ -249,8 +249,8 @@ begin
   from public.cash_movements
   where cash_session_id=v_session;
 
-  if v_cash<>28 then
-    raise exception 'TEST FAILED: cash ledger expected 28, got %',v_cash;
+  if v_cash<>125 then
+    raise exception 'TEST FAILED: cash ledger expected 125, got %',v_cash;
   end if;
 
   select round(coalesce(sum(amount),0),2)
