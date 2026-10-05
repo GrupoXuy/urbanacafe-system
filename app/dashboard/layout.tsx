@@ -1,4 +1,5 @@
 "use client";
+import type {ReactNode} from "react";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {createClient} from "@/lib/supabase-browser";
@@ -22,7 +23,7 @@ const links=[
   ["Configurações","/dashboard/configuracoes"]
 ];
 
-export default function DashboardLayout({children}:{children:React.ReactNode}){
+export default function DashboardLayout({children}:{children:ReactNode}){
   const pathname=usePathname();
 
   async function logout(){
