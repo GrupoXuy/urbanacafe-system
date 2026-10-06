@@ -22,18 +22,19 @@ export default function Funcionarios(){
     setLoading(false);
   }
   useEffect(()=>{load()},[]);
-  async function call(action:string,extra:Record<string,unknown>={}){
+  async function call(action:string,extra:Record<string,unknown>={}):Promise<boolean>{
     setMessage("");setActionLink("");
     const r=await fetch("/api/employees",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,businessId:business,...extra})});
     const data=await r.json();
-    if(!r.ok){setMessage(data.error||"Não foi possível concluir a operação");return}
+    if(!r.ok){setMessage(data.error||"Não foi possível concluir a operação");return false}
     if(action==="invite")setMessage("Convite enviado e funcionário criado.");
     else if(action==="remove")setMessage("Acesso removido. O histórico operacional foi preservado.");
     else if(action==="reset"){setMessage("Link de recuperação gerado. Abra-o e entregue ao colaborador por um canal seguro.");setActionLink(data.actionLink||"")}
     else if(action==="resend_invite")setMessage("Convite reenviado.");
     await load();
+    return true;
   }
-  async function invite(){setSending(true);await call("invite",{email,fullName,phone,role});if(!message){setEmail("");setFullName("");setPhone("")}setSending(false)}
+  async function invite(){setSending(true);const ok=await call("invite",{email,fullName,phone,role});if(ok){setEmail("");setFullName("");setPhone("")}setSending(false)}
   const updateMember=async(m:Member,nextRole:string,nextActive:boolean)=>call("update",{userId:m.user_id,role:nextRole,active:nextActive});
   return <div className="main">
     <div className="topbar"><div><h1 className="title">Funcionários</h1><p className="subtitle">Equipe, cargos, convites e recuperação de acesso</p></div><Link href="/dashboard" className="btn" style={{width:"auto",textDecoration:"none"}}>Dashboard</Link></div>
