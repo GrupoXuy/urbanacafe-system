@@ -1,19 +1,21 @@
 "use client";
-import {FormEvent,useState} from "react";
+import {FormEvent,useEffect,useState} from "react";
 import Link from "next/link";
-import {useRouter,useSearchParams} from "next/navigation";
+import {useRouter} from "next/navigation";
 import {createClient} from "@/lib/supabase-browser";
 
 export default function Login(){
-  const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[error,setError]=useState(""),[loading,setLoading]=useState(false);
-  const router=useRouter(),searchParams=useSearchParams();
+  const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[error,setError]=useState(""),[queryMessage,setQueryMessage]=useState(""),[loading,setLoading]=useState(false);
+  const router=useRouter();
+  useEffect(()=>{
+    const value=new URLSearchParams(window.location.search).get("error");
+    setQueryMessage(value==="auth_callback"?"Não foi possível concluir a autenticação. Solicite um novo link e tente novamente.":value==="missing_code"?"Link de autenticação inválido.":"");
+  },[]);
   async function submit(e:FormEvent){
     e.preventDefault();setLoading(true);setError("");
     const {error}=await createClient().auth.signInWithPassword({email:email.trim(),password});
     if(error)setError(error.message);else router.push("/dashboard");setLoading(false);
   }
-  const queryError=searchParams.get("error");
-  const queryMessage=queryError==="auth_callback"?"Não foi possível concluir a autenticação. Solicite um novo link e tente novamente.":queryError==="missing_code"?"Link de autenticação inválido.":"";
   return <main className="login"><form className="login-card" onSubmit={submit}>
     <h1>Urbana <span style={{color:"#b68b3c"}}>Café</span></h1><p>Acesso administrativo</p>
     {(error||queryMessage)&&<div className="notice">{error||queryMessage}</div>}
