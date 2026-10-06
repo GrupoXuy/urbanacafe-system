@@ -1,0 +1,265 @@
+"use client";
+
+import {useEffect} from "react";
+
+const translations:Record<string,string>={
+  "Sair":"Cerrar sesión",
+  "Navegação principal":"Navegación principal",
+  "Vendas / POS":"Ventas / POS",
+  "Comandas":"Comandas",
+  "KDS Cozinha/Bar":"KDS Cocina/Bar",
+  "Histórico de vendas":"Historial de ventas",
+  "Caixa":"Caja",
+  "Estoque":"Inventario",
+  "Produtos":"Productos",
+  "Fichas técnicas":"Fichas técnicas",
+  "Compras":"Compras",
+  "Fornecedores":"Proveedores",
+  "Despesas":"Gastos",
+  "Clientes":"Clientes",
+  "Mesas":"Mesas",
+  "Reservas":"Reservas",
+  "Relatórios":"Informes",
+  "Funcionários":"Empleados",
+  "Configurações":"Configuración",
+  "Visão geral da operação — hoje":"Resumen de la operación — hoy",
+  "Faturamento":"Facturación",
+  "Lucro bruto":"Beneficio bruto",
+  "Lucro líquido":"Beneficio neto",
+  "Vendas":"Ventas",
+  "Estornos":"Reembolsos",
+  "Valor do estoque":"Valor del inventario",
+  "Itens em estoque":"Artículos en inventario",
+  "Abaixo do mínimo":"Por debajo del mínimo",
+  "Sem estoque":"Sin existencias",
+  "Caixas abertos":"Cajas abiertas",
+  "Operação":"Operación",
+  "Módulo":"Módulo",
+  "Status":"Estado",
+  "Ação":"Acción",
+  "Operacional":"Operativo",
+  "Gerencial":"Gestión",
+  "Administrativo":"Administrativo",
+  "Abrir vendas":"Abrir ventas",
+  "Gerenciar atendimento":"Gestionar atención",
+  "Acompanhar produção":"Supervisar producción",
+  "Consultar e estornar vendas":"Consultar y reembolsar ventas",
+  "Gerenciar caixa":"Gestionar caja",
+  "Consultar estoque":"Consultar inventario",
+  "Gerenciar produtos":"Gestionar productos",
+  "Gerenciar receitas":"Gestionar fichas técnicas",
+  "Consultar compras":"Consultar compras",
+  "Gerenciar fornecedores":"Gestionar proveedores",
+  "Lançar despesa":"Registrar gasto",
+  "Gerenciar clientes":"Gestionar clientes",
+  "Gerenciar mesas":"Gestionar mesas",
+  "Gerenciar reservas":"Gestionar reservas",
+  "Ver resultados":"Ver resultados",
+  "Gerenciar equipe":"Gestionar equipo",
+  "Configurar negócio":"Configurar negocio",
+  "Carregando...":"Cargando...",
+  "Carregando estoque...":"Cargando inventario...",
+  "Carregando histórico...":"Cargando historial...",
+  "Salvar":"Guardar",
+  "Salvar alterações":"Guardar cambios",
+  "Cadastrar":"Registrar",
+  "Cadastrar cliente":"Registrar cliente",
+  "Cadastrar produto":"Registrar producto",
+  "Cadastrar fornecedor":"Registrar proveedor",
+  "Cadastrar mesa":"Registrar mesa",
+  "Cadastrar reserva":"Registrar reserva",
+  "Cadastrar receita":"Registrar ficha técnica",
+  "Cancelar":"Cancelar",
+  "Editar":"Editar",
+  "Excluir":"Eliminar",
+  "Remover":"Eliminar",
+  "Novo cliente":"Nuevo cliente",
+  "Novo produto":"Nuevo producto",
+  "Novo fornecedor":"Nuevo proveedor",
+  "Nova mesa":"Nueva mesa",
+  "Nova reserva":"Nueva reserva",
+  "Nova receita":"Nueva ficha técnica",
+  "Observação":"Observación",
+  "Observações":"Observaciones",
+  "Cliente":"Cliente",
+  "Consumidor final":"Consumidor final",
+  "Telefone":"Teléfono",
+  "E-mail":"Correo electrónico",
+  "Nome":"Nombre",
+  "Mesa":"Mesa",
+  "Balcão / sem mesa":"Mostrador / sin mesa",
+  "Forma de pagamento":"Forma de pago",
+  "Dinheiro":"Efectivo",
+  "Débito":"Débito",
+  "Crédito":"Crédito",
+  "Transferência":"Transferencia",
+  "Outro":"Otro",
+  "Outro":"Otro",
+  "Sessão de caixa":"Sesión de caja",
+  "Aberta":"Abierta",
+  "Fechada":"Cerrada",
+  "Caixa aberto":"Caja abierta",
+  "Caixa fechado":"Caja cerrada",
+  "Abra o caixa antes de finalizar a venda.":"Abra la caja antes de finalizar la venta.",
+  "Adicione pelo menos um produto.":"Agregue al menos un producto.",
+  "Venda finalizada com sucesso.":"Venta finalizada correctamente.",
+  "Processando...":"Procesando...",
+  "Finalizar venda":"Finalizar venta",
+  "Buscar produto...":"Buscar producto...",
+  "Nenhum produto encontrado. Cadastre produtos em":"No se encontraron productos. Registre productos en",
+  "Nenhum item.":"Ningún artículo.",
+  "Quantidade":"Cantidad",
+  "Valor":"Importe",
+  "Tipo":"Tipo",
+  "Abertura":"Apertura",
+  "Dinheiro esperado":"Efectivo esperado",
+  "Lançamentos":"Movimientos",
+  "Abrir caixa":"Abrir caja",
+  "Valor inicial":"Importe inicial",
+  "Abrindo...":"Abriendo...",
+  "Nova movimentação":"Nuevo movimiento",
+  "Depósito":"Depósito",
+  "Retirada":"Retiro",
+  "Ajuste positivo":"Ajuste positivo",
+  "Movimentação registrada.":"Movimiento registrado.",
+  "Fechado":"Cerrado",
+  "Aberto":"Abierto",
+  "Estoque controlado":"Inventario controlado",
+  "Itens controlados":"Artículos controlados",
+  "Saldo, entradas, perdas e inventário físico com histórico transacional":"Saldo, entradas, pérdidas e inventario físico con historial transaccional",
+  "Movimentar estoque":"Mover inventario",
+  "O saldo e o ledger são atualizados na mesma transação.":"El saldo y el libro se actualizan en la misma transacción.",
+  "Operação":"Operación",
+  "Ajuste — entrada":"Ajuste — entrada",
+  "Ajuste — saída":"Ajuste — salida",
+  "Perda / descarte":"Pérdida / descarte",
+  "Motivo do movimento":"Motivo del movimiento",
+  "Registrar movimento":"Registrar movimiento",
+  "Inventário físico":"Inventario físico",
+  "Informe a quantidade realmente encontrada; a diferença vira ajuste compensatório.":"Informe la cantidad realmente encontrada; la diferencia se convierte en un ajuste compensatorio.",
+  "Quantidade contada":"Cantidad contada",
+  "Ex.: conferência de fechamento":"Ej.: verificación de cierre",
+  "Registrar contagem":"Registrar conteo",
+  "Seu perfil está em modo de consulta. Apenas Proprietário, Gerente e Estoque podem movimentar o inventário.":"Su perfil está en modo de consulta. Solo Propietario, Gerente e Inventario pueden mover existencias.",
+  "Saldo atual":"Saldo actual",
+  "Produto":"Producto",
+  "Un.":"Ud.",
+  "Saldo":"Saldo",
+  "Mínimo":"Mínimo",
+  "Custo médio":"Costo medio",
+  "Valor":"Importe",
+  "Reposição":"Reponer",
+  "Normal":"Normal",
+  "Contar":"Contar",
+  "Nenhum item com controle de estoque cadastrado.":"No hay artículos con control de inventario registrados.",
+  "Últimos movimentos":"Últimos movimientos",
+  "Data":"Fecha",
+  "Custo":"Costo",
+  "Nenhum movimento registrado.":"No hay movimientos registrados.",
+  "Compra":"Compra",
+  "Venda":"Venta",
+  "Ajuste":"Ajuste",
+  "Produção":"Producción",
+  "Transferência de entrada":"Transferencia de entrada",
+  "Transferência de saída":"Transferencia de salida",
+  "Perda / descarte":"Pérdida / descarte",
+  "Atenção:":"Atención:",
+  "Revisar estoque":"Revisar inventario",
+  "Login":"Inicio de sesión",
+  "Senha":"Contraseña",
+  "Entrar":"Ingresar",
+  "Esqueci minha senha":"Olvidé mi contraseña",
+  "E-mail":"Correo electrónico",
+  "Recuperar senha":"Recuperar contraseña",
+  "Nova senha":"Nueva contraseña",
+  "Confirmar senha":"Confirmar contraseña",
+  "Atualizar senha":"Actualizar contraseña",
+  "Voltar para o login":"Volver al inicio de sesión",
+  "Primeiro acesso":"Primer acceso",
+  "Configuração inicial":"Configuración inicial",
+  "Negócio não encontrado.":"Negocio no encontrado.",
+  "Não foi possível carregar o estoque.":"No fue posible cargar el inventario.",
+  "Cozinha":"Cocina",
+  "Bar":"Bar",
+  "Fila de produção":"Cola de producción",
+  "Prioridade":"Prioridad",
+  "Tempo objetivo":"Tiempo objetivo",
+  "Identificação de atraso":"Identificación de retraso",
+  "Pressão da fila":"Presión de la cola",
+  "Capacidade por estação":"Capacidad por estación",
+  "Previsão de atraso":"Previsión de retraso",
+  "Alertas automáticas":"Alertas automáticas",
+  "Iniciar preparo":"Iniciar preparación",
+  "Marcar pronto":"Marcar como listo",
+  "Marcar entregue":"Marcar como entregado",
+  "Imprimir comanda":"Imprimir comanda",
+  "Fila limpa.":"Cola vacía.",
+  "Indicadores por estação":"Indicadores por estación",
+  "Estação":"Estación",
+  "Fila":"Cola",
+  "Preparo":"Preparación",
+  "Prontos":"Listos",
+  "Atrasados":"Retrasados",
+  "Entregues":"Entregados",
+  "Espera média":"Espera media",
+  "Preparo médio":"Preparación media",
+  "Total médio":"Total medio",
+  "Ainda não há produção registrada hoje.":"Todavía no hay producción registrada hoy."
+};
+
+const attributeTranslations:Record<string,string>={
+  "Buscar produto...":"Buscar producto...",
+  "Buscar cliente...":"Buscar cliente...",
+  "Buscar fornecedor...":"Buscar proveedor...",
+  "Preferências ou observações":"Preferencias u observaciones",
+  "Motivo do movimento":"Motivo del movimiento",
+  "Ex.: sem açúcar, retirar guardanapo...":"Ej.: sin azúcar, retirar servilleta..."
+};
+
+function translateText(value:string){
+  return translations[value] ?? value;
+}
+
+function translateNode(node:Node){
+  if(node.nodeType===Node.TEXT_NODE){
+    const parent=node.parentElement;
+    if(parent?.closest("[data-spanish-skip]")) return;
+    const current=node.nodeValue ?? "";
+    const trimmed=current.trim();
+    if(!trimmed) return;
+    const translated=translateText(trimmed);
+    if(translated!==trimmed){
+      node.nodeValue=current.replace(trimmed,translated);
+    }
+    return;
+  }
+  if(node.nodeType!==Node.ELEMENT_NODE)return;
+  const el=node as HTMLElement;
+  if(el.hasAttribute("data-spanish-skip"))return;
+  for(const attr of ["placeholder","aria-label","title"]){
+    const value=el.getAttribute(attr);
+    if(value && attributeTranslations[value])el.setAttribute(attr,attributeTranslations[value]);
+  }
+  if(el.matches("option") && el.textContent){
+    const t=translateText(el.textContent.trim());
+    if(t!==el.textContent.trim())el.textContent=t;
+  }
+  node.childNodes.forEach(translateNode);
+}
+
+export default function SpanishUI(){
+  useEffect(()=>{
+    document.documentElement.lang="es-UY";
+    const root=document.body;
+    translateNode(root);
+    const observer=new MutationObserver(mutations=>{
+      for(const mutation of mutations){
+        mutation.addedNodes.forEach(translateNode);
+        if(mutation.type==="characterData")translateNode(mutation.target);
+      }
+    });
+    observer.observe(root,{childList:true,subtree:true,characterData:true});
+    return()=>observer.disconnect();
+  },[]);
+  return null;
+}
