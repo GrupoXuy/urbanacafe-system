@@ -6,23 +6,23 @@ import {createClient} from "@/lib/supabase-browser";
 
 const links=[
   ["Dashboard","/dashboard"],
-  ["Vendas / POS","/dashboard/pos"],
+  ["Ventas / POS","/dashboard/pos"],
   ["Comandas","/dashboard/comandas"],
-  ["KDS Cozinha/Bar","/dashboard/kds"],
-  ["Histórico de vendas","/dashboard/vendas"],
-  ["Caixa","/dashboard/caixa"],
-  ["Estoque","/dashboard/estoque"],
-  ["Produtos","/dashboard/produtos"],
+  ["KDS Cocina/Bar","/dashboard/kds"],
+  ["Historial de ventas","/dashboard/vendas"],
+  ["Caja","/dashboard/caixa"],
+  ["Inventario","/dashboard/estoque"],
+  ["Productos","/dashboard/produtos"],
   ["Fichas técnicas","/dashboard/receitas"],
   ["Compras","/dashboard/compras"],
-  ["Fornecedores","/dashboard/fornecedores"],
-  ["Despesas","/dashboard/despesas"],
+  ["Proveedores","/dashboard/fornecedores"],
+  ["Gastos","/dashboard/despesas"],
   ["Clientes","/dashboard/clientes"],
   ["Mesas","/dashboard/mesas"],
   ["Reservas","/dashboard/reservas"],
-  ["Relatórios","/dashboard/relatorios"],
-  ["Funcionários","/dashboard/funcionarios"],
-  ["Configurações","/dashboard/configuracoes"]
+  ["Informes","/dashboard/relatorios"],
+  ["Empleados","/dashboard/funcionarios"],
+  ["Configuración","/dashboard/configuracoes"]
 ];
 
 export default function DashboardLayout({children}:{children:ReactNode}){
@@ -36,7 +36,7 @@ export default function DashboardLayout({children}:{children:ReactNode}){
   return <div className="shell">
     <aside className="sidebar">
       <div className="brand">URBANA <span>CAFÉ</span></div>
-      <nav className="nav" aria-label="Navegação principal">
+      <nav className="nav" aria-label="Navegación principal">
         {links.map(([label,href])=>{
           const active=href==="/dashboard"
             ? pathname==="/dashboard"
@@ -53,7 +53,7 @@ export default function DashboardLayout({children}:{children:ReactNode}){
         type="button"
         onClick={logout}
         style={{marginTop:24,width:"100%",padding:10,borderRadius:8,border:"1px solid #555",background:"#151515",color:"#fff",cursor:"pointer"}}
-      >Sair</button>
+      >Cerrar sesión</button>
     </aside>
     {children}
   </div>;
