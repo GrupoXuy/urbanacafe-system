@@ -103,7 +103,7 @@ export async function POST(request:Request){
         await admin.from("audit_logs").insert({business_id:businessId,user_id:user.id,action:"employee_invite_resent",entity:"business_memberships",entity_id:targetUserId});
         return NextResponse.json({ok:true});
       }
-      const {data,error}=await admin.auth.admin.generateLink({type:"recovery",email:userResult.user.email,options:{redirectTo:"https://urbanacafe-system.vercel.app/auth/callback?next=/reset-password"}});
+      const {data,error}=await admin.auth.admin.generateLink({type:"recovery",email:userResult.user.email,options:{redirectTo:new URL("/auth/callback?next=/reset-password",request.url).toString()}});
       if(error)throw error;
       const actionLink=(data as {properties?:{action_link?:string};action_link?:string}).properties?.action_link||(data as {action_link?:string}).action_link;
       if(!actionLink)throw new Error("Não foi possível gerar o link de recuperação");
