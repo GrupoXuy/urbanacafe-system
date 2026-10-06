@@ -97,22 +97,21 @@ A operação ponta a ponta principal está implementada e validada em produção
 
 A camada de funções privilegiadas foi isolada em schema `private`, mantendo wrappers públicos `SECURITY INVOKER`. O projeto usa a convenção `proxy.ts` do Next.js 16 e Node `22.14.0` de forma determinística. O KDS operacional usa `production_tickets` como fonte única de produção, com prioridade e tempo-alvo persistidos, métricas agregadas por estação e Supabase Realtime para atualização imediata.
 
+## Pré-entrega
+
+A Fase Final de Pré-Entrega foi iniciada em 06/10/2026 na branch `codex/pre-delivery-urbana`, com PR #23. Foram implementados recuperação de senha, bloqueio do onboarding público após o primeiro proprietário, proteção do callback contra open redirect e gestão ampliada de acessos da equipe (convite, reenvio, redefinição, ativação/desativação e remoção preservando histórico). A regra de onboarding único também foi aplicada no banco de produção.
+
+Validações SQL executadas em produção: segurança/RLS/operação principal, comandas e atendimento, KDS cozinha/bar, inteligência operacional do KDS e matriz de cargos/permissões — todas com **PASS**.
+
+Checklist de aceite do proprietário: `docs/URBANA_CAFE_CHECKLIST_ACEITE.md`.
+
 ## Pendências externas
 
 1. Ativar Leaked Password Protection no Supabase Auth.
-2. Configurar um banco descartável/branch para executar os `supabase/tests/` automaticamente no CI.
-3. Ativar proteção server-side da branch `main` no GitHub, pois o conector atual não expõe essa mutação.
+2. Configurar um banco descartável/branch para executar os testes SQL automaticamente no CI.
+3. Ativar proteção server-side da branch `main` no GitHub. A conexão GitHub disponível nesta execução não expõe essa mutação.
+4. Validar backup/PITR e procedimento de recuperação conforme o plano Supabase.
+5. Cadastrar e conferir os dados reais do Urbana Café e validar hardware/impressão no estabelecimento.
 
-Esses itens não impedem a operação atual; os builds do Vercel e os testes transacionais executados no Supabase foram validados durante as fases de implementação.
+Esses itens não devem ser marcados como concluídos sem validação explícita.
 
-## Próxima evolução
-
-Depois do núcleo concluído, a evolução incremental prioriza o KDS operacional: prioridades e SLA de produção, filas por estação, tempos de preparo, atraso, indicadores e automações de cozinha/bar, Central de Performance KDS com histórico por período, SLA por estação, gargalos prováveis, produtos críticos e demanda por hora, seguida por integrações externas e refinamentos de UX.
-
-## Regra de evolução
-
-Novas funcionalidades devem seguir esta ordem:
-
-**modelo de dados → regra transacional → RLS/permissões → teste → interface → produção.**
-
-Isso evita que a interface fique à frente da lógica real do sistema.
