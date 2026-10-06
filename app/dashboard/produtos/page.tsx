@@ -22,6 +22,7 @@ export default function Produtos(){
   const [productionStation,setProductionStation]=useState<"none"|"kitchen"|"bar">("kitchen");
   const [message,setMessage]=useState("");
   const [saving,setSaving]=useState(false);
+  const [deleting,setDeleting]=useState<string|null>(null);
 
   async function load(){
     const c=createClient();
@@ -61,6 +62,40 @@ export default function Produtos(){
     if(error)setMessage(error.message);else load();
   }
 
+  async function removeProduct(p:Product){
+    const confirmed=window.confirm(
+      `¿Eliminar el producto "${p.name}" definitivamente? Esta acción no se puede deshacer. Si el producto tiene ventas, compras o movimientos históricos asociados, el sistema bloqueará la eliminación para proteger la integridad de los registros.`
+    );
+    if(!confirmed)return;
+
+    setDeleting(p.id);
+    setMessage("");
+    try{
+      const {error}=await createClient()
+        .from("products")
+        .delete()
+        .eq("id",p.id)
+        .eq("business_id",business);
+
+      if(error){
+        if(error.code==="23503"){
+          setMessage(`No se puede eliminar "${p.name}" porque tiene registros históricos asociados. Desactívalo para mantener el historial.`);
+        }else if(error.code==="42501"){
+          setMessage("No tienes permisos para eliminar este producto.");
+        }else{
+          setMessage("No se pudo eliminar el producto.");
+        }
+        return;
+      }
+
+      if(editing===p.id)reset();
+      setMessage(`Producto "${p.name}" eliminado.`);
+      await load();
+    }finally{
+      setDeleting(null);
+    }
+  }
+
   return <div className="main">
     <div className="topbar"><div><h1 className="title">Produtos</h1><p className="subtitle">Catálogo, preços, custos e parâmetros de estoque</p></div></div>
     <form className="card section" onSubmit={save}>
@@ -81,7 +116,17 @@ export default function Produtos(){
       {message&&<div className="notice">{message}</div>}
     </form>
     <div className="section"><table className="table"><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Custo</th><th>Estoque</th><th>Produção</th><th>Status</th><th></th></tr></thead><tbody>
-      {products.map(p=><tr key={p.id}><td><b>{p.name}</b>{p.sku&&<div className="subtitle">{p.sku}</div>}</td><td>{categories.find(c=>c.id===p.category_id)?.name||"—"}</td><td>UYU {Number(p.sale_price).toFixed(2)}</td><td>UYU {Number(p.average_cost).toFixed(4)}</td><td>{p.stock_quantity} {p.unit}</td><td>{p.production_station==="kitchen"?"Cozinha":p.production_station==="bar"?"Bar":"Sem produção"}</td><td>{!p.active?"Inativo":Number(p.stock_quantity)<=Number(p.min_stock)?"Reposição":"Ativo"}</td><td><div style={{display:"flex",gap:8}}><button onClick={()=>edit(p)}>Editar</button><button onClick={()=>toggle(p)}>{p.active?"Desativar":"Ativar"}</button></div></td></tr>)}
+      {products.map(p=><tr key={p.id}><td><b>{p.name}</b>{p.sku&&<div className="subtitle">{p.sku}</div>}</td><td>{categories.find(c=>c.id===p.category_id)?.name||"—"}</td><td>UYU {Number(p.sale_price).toFixed(2)}</td><td>UYU {Number(p.average_cost).toFixed(4)}</td><td>{p.stock_quantity} {p.unit}</td><td>{p.production_station==="kitchen"?"Cozinha":p.production_station==="bar"?"Bar":"Sem produção"}</td><td>{!p.active?"Inativo":Number(p.stock_quantity)<=Number(p.min_stock)?"Reposição":"Ativo"}</td><td><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <button onClick={()=>edit(p)} disabled={deleting===p.id}>Editar</button>
+        <button onClick={()=>toggle(p)} disabled={deleting===p.id}>{p.active?"Desactivar":"Activar"}</button>
+        <button
+          onClick={()=>removeProduct(p)}
+          disabled={deleting===p.id}
+          style={{background:"#b42318",color:"#fff"}}
+        >
+          {deleting===p.id?"Eliminando...":"Eliminar"}
+        </button>
+      </div></td></tr>)}
     </tbody></table></div>
   </div>
 }
