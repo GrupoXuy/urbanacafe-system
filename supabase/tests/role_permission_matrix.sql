@@ -32,9 +32,9 @@ begin
         (v_cashier,'TEST cashier product','UN',10,1,10,true,true,true),
         (v_waiter,'TEST waiter product','UN',10,1,10,true,true,true),
         (v_stockkeeper,'TEST stock product','UN',10,1,10,true,true,true),
-        (v_analyst,'TEST analyst product','UN',10,1,10,true,true,true)
-  returning id into v_waiter_product;
+        (v_analyst,'TEST analyst product','UN',10,1,10,true,true,true);
 
+  select id into v_waiter_product from public.products where business_id=v_waiter limit 1;
   select id into v_cashier_product from public.products where business_id=v_cashier limit 1;
   select id into v_stock_product from public.products where business_id=v_stockkeeper limit 1;
   insert into public.suppliers(business_id,name,active) values(v_stockkeeper,'TEST supplier',true) returning id into v_supplier;
