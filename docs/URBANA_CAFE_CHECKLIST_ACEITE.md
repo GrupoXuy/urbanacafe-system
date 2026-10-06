@@ -11,7 +11,7 @@
 ## 2. Gate técnico — Grupo X
 | Item | Status |
 |---|---|
-| Build Vercel | ✅ Validado nos ciclos anteriores; PR atual em validação |
+| Build Vercel produção | ✅ READY no commit final em main |
 | Node 22.x na Vercel | ✅ Configurado |
 | Supabase ativo/saudável | ✅ Validado |
 | RLS/funções transacionais | ✅ Testados |
