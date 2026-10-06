@@ -91,7 +91,7 @@ export default function KDS(){
   const [message,setMessage]=useState("");
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState("");
-  const [now,setNow]=useState(Date.now());
+  const [now,setNow]=useState(0);
   const [realtime,setRealtime]=useState(false);
   const [control,setControl]=useState<OperationalControl>({stations:[],alerts:[]});
 
