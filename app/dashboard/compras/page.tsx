@@ -74,6 +74,6 @@ export default function Compras(){
    {lines.length>0&&<table className="table"><thead><tr><th>Produto</th><th>Qtd.</th><th>Custo</th><th>Total</th><th></th></tr></thead><tbody>{lines.map(l=><tr key={l.id}><td>{l.name}</td><td>{l.quantity} {l.unit}</td><td>UYU {l.unit_cost.toFixed(4)}</td><td>UYU {(l.quantity*l.unit_cost).toFixed(2)}</td><td><button onClick={()=>removeLine(l.id)}>Remover</button></td></tr>)}</tbody></table>}
    <button className="btn" onClick={saveAndPost} disabled={!lines.length||saving}>{saving?"Lançando...":"Lançar compra"}</button>{paymentMethod==="cash"&&<p className="subtitle">Pagamento em dinheiro exige caixa aberto.</p>}{message&&<div className="notice">{message}</div>}
  </div>
- <div className="section"><h2>Últimas compras</h2><table className="table"><thead><tr><th>Data</th><th>Nota</th><th>Pagamento</th><th>Total</th><th>Status</th></tr></thead><tbody>{items.map(x=><tr key={x.id}><td>{new Date(x.purchased_at).toLocaleDateString("pt-BR")}</td><td>{x.invoice_number||"—"}</td><td>{x.payment_method||"—"}</td><td>UYU {Number(x.total).toFixed(2)}</td><td>{x.status}</td></tr>)}</tbody></table></div>
+ <div className="section"><h2>Últimas compras</h2><table className="table"><thead><tr><th>Data</th><th>Nota</th><th>Pagamento</th><th>Total</th><th>Status</th></tr></thead><tbody>{items.map(x=><tr key={x.id}><td>{new Date(x.purchased_at).toLocaleDateString("es-UY")}</td><td>{x.invoice_number||"—"}</td><td>{x.payment_method||"—"}</td><td>UYU {Number(x.total).toFixed(2)}</td><td>{x.status}</td></tr>)}</tbody></table></div>
  </div>
 }
