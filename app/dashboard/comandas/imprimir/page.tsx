@@ -73,7 +73,7 @@ export default function ImpressaoOperacional(){
         <thead><tr><th>Horário</th><th>Mesa</th><th>Cliente</th><th>Total</th><th>Status</th><th>Ação</th></tr></thead>
         <tbody>
           {items.map(item=><tr key={item.id}>
-            <td>{new Date(item.created_at).toLocaleString("pt-BR")}</td>
+            <td>{new Date(item.created_at).toLocaleString("es-UY")}</td>
             <td>{item.table_name}</td>
             <td>{item.customer_name}</td>
             <td>UYU {item.total.toFixed(2)}</td>
