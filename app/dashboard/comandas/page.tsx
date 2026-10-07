@@ -371,7 +371,7 @@ export default function Comandas(){
                   <b>{tableName}</b>
                   <b>{money(Number(order.total))}</b>
                 </div>
-                <div className="subtitle">{customerName} · aberta às {new Date(order.created_at).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div>
+                <div className="subtitle">{customerName} · aberta às {new Date(order.created_at).toLocaleTimeString("es-UY",{hour:"2-digit",minute:"2-digit"})}</div>
                 {order.notes&&<div style={{marginTop:6,fontSize:13}}>{order.notes}</div>}
               </button>;
             })}
