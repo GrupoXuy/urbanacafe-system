@@ -276,7 +276,7 @@ export default function Estoque(){
           <thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Quantidade</th><th>Custo</th><th>Observação</th></tr></thead>
           <tbody>
             {movements.length?movements.map(m=><tr key={m.id}>
-              <td>{new Date(m.created_at).toLocaleString("pt-BR")}</td>
+              <td>{new Date(m.created_at).toLocaleString("es-UY")}</td>
               <td>{productName(m.product_id)}</td>
               <td>{movementLabel[m.movement_type]||m.movement_type}</td>
               <td>{Number(m.quantity).toFixed(3)}</td>
