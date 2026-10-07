@@ -59,7 +59,7 @@ export default function Funcionarios(){
             <td>{m.email||"—"}</td>
             <td><select value={m.role} disabled={isOwner} onChange={e=>updateMember(m,e.target.value,m.active)}>{roleOptions.map(r=><option key={r} value={r}>{roleLabel[r]}</option>)}</select></td>
             <td>{m.active?"Ativo":"Inativo"} · {m.confirmedAt?"Confirmado":"Convite pendente"}</td>
-            <td>{m.lastSignInAt?new Date(m.lastSignInAt).toLocaleString("pt-BR"):"Nunca"}</td>
+            <td>{m.lastSignInAt?new Date(m.lastSignInAt).toLocaleString("es-UY"):"Nunca"}</td>
             <td><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               <button className="btn" style={{width:"auto"}} onClick={()=>updateMember(m,m.role,!m.active)}>{m.active?"Desativar":"Ativar"}</button>
               {!m.confirmedAt&&<button className="btn" style={{width:"auto"}} onClick={()=>call("resend_invite",{userId:m.user_id})}>Reenviar convite</button>}

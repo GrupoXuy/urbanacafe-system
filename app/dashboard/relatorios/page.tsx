@@ -102,7 +102,7 @@ const pad=(n:number)=>String(n).padStart(2,"0");
 function monthStart(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-01"}
 function today(){const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
 const money=(value:number)=>"UYU "+Number(value||0).toFixed(2);
-const dateLabel=(value:string)=>new Date(value+"T12:00:00").toLocaleDateString("pt-BR");
+const dateLabel=(value:string)=>new Date(value+"T12:00:00").toLocaleDateString("es-UY");
 
 export default function Relatorios(){
   const [start,setStart]=useState(monthStart());
@@ -397,7 +397,7 @@ export default function Relatorios(){
         <table className="table">
           <thead><tr><th>Abertura</th><th>Status</th><th>Esperado</th><th>Contado</th><th>Diferença</th><th>Vendas</th><th>Estornos</th><th>Despesas</th><th>Movimentos</th></tr></thead>
           <tbody>{cashRows.length?cashRows.map(r=><tr key={r.cash_session_id}>
-            <td>{new Date(r.opened_at).toLocaleString("pt-BR")}</td>
+            <td>{new Date(r.opened_at).toLocaleString("es-UY")}</td>
             <td>{r.status==="open"?"Aberto":"Fechado"}</td>
             <td>{money(r.calculated_expected)}</td>
             <td>{r.counted_amount===null?"—":money(r.counted_amount)}</td>

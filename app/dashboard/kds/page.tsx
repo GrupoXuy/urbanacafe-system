@@ -397,7 +397,7 @@ export default function KDS(){
                 </div>
 
                 <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",marginTop:10}}>
-                  <div className="subtitle">Enviado {new Date(ticket.sent_at).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div>
+                  <div className="subtitle">Enviado {new Date(ticket.sent_at).toLocaleTimeString("es-UY",{hour:"2-digit",minute:"2-digit"})}</div>
                   <div style={{display:"flex",gap:8}}>
                     {canStart&&<button type="button" className="btn" disabled={busy===ticket.id} onClick={()=>transition(ticket,"preparing")}>{busy===ticket.id?"...":"Iniciar preparo"}</button>}
                     {canReady&&<button type="button" className="btn" disabled={busy===ticket.id} onClick={()=>transition(ticket,"ready")}>{busy===ticket.id?"...":"Marcar pronto"}</button>}

@@ -80,7 +80,7 @@ export default function Caixa(){
   return <div className="main">
     <h1 className="title">Caixa</h1><p className="subtitle">Abertura, entradas, saídas e fechamento</p>
     <div className="grid section">
-      <div className="card"><div className="label">Status</div><div className="value">{session?"Aberto":"Fechado"}</div><p>{session?new Date(session.opened_at).toLocaleString("pt-BR"):"Nenhuma sessão aberta"}</p></div>
+      <div className="card"><div className="label">Status</div><div className="value">{session?"Aberto":"Fechado"}</div><p>{session?new Date(session.opened_at).toLocaleString("es-UY"):"Nenhuma sessão aberta"}</p></div>
       <div className="card"><div className="label">Abertura</div><div className="value">UYU {Number(session?.opening_amount||0).toFixed(2)}</div></div>
       <div className="card"><div className="label">Dinheiro esperado</div><div className="value">UYU {expected.toFixed(2)}</div></div>
       <div className="card"><div className="label">Lançamentos</div><div className="value">{movements.length}</div></div>
@@ -114,7 +114,7 @@ export default function Caixa(){
 
         <div className="section"><h2>Movimentações recentes</h2>
           <table className="table"><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Valor</th></tr></thead>
-          <tbody>{movements.map(m=><tr key={m.id}><td>{new Date(m.created_at).toLocaleString("pt-BR")}</td><td>{m.movement_type}</td><td>{m.description||"—"}</td><td>{Number(m.amount)>=0?"+":"-"} UYU {Math.abs(Number(m.amount)).toFixed(2)}</td></tr>)}</tbody></table>
+          <tbody>{movements.map(m=><tr key={m.id}><td>{new Date(m.created_at).toLocaleString("es-UY")}</td><td>{m.movement_type}</td><td>{m.description||"—"}</td><td>{Number(m.amount)>=0?"+":"-"} UYU {Math.abs(Number(m.amount)).toFixed(2)}</td></tr>)}</tbody></table>
         </div>
       </>
     )}

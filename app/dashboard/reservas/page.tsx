@@ -80,7 +80,7 @@ export default function Reservas(){
     </form>
     <div className="section">
       <table className="table"><thead><tr><th>Data</th><th>Cliente</th><th>Mesa</th><th>Pessoas</th><th>Status</th><th>Observação</th></tr></thead>
-      <tbody>{items.map(r=><tr key={r.id}><td>{new Date(r.reservation_at).toLocaleString("pt-BR")}</td><td>{r.customers?.[0]?.name||"—"}</td><td>{r.cafe_tables?.[0]?.name||"—"}</td><td>{r.party_size}</td><td><select value={r.status} onChange={e=>changeStatus(r.id,e.target.value)}>{statuses.map(s=><option key={s[0]} value={s[0]}>{s[1]}</option>)}</select></td><td>{r.notes||"—"}</td></tr>)}</tbody>
+      <tbody>{items.map(r=><tr key={r.id}><td>{new Date(r.reservation_at).toLocaleString("es-UY")}</td><td>{r.customers?.[0]?.name||"—"}</td><td>{r.cafe_tables?.[0]?.name||"—"}</td><td>{r.party_size}</td><td><select value={r.status} onChange={e=>changeStatus(r.id,e.target.value)}>{statuses.map(s=><option key={s[0]} value={s[0]}>{s[1]}</option>)}</select></td><td>{r.notes||"—"}</td></tr>)}</tbody>
       </table>
     </div>
   </div>

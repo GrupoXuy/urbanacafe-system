@@ -105,7 +105,7 @@ export default function PrintTicket(){
       <div style={{borderTop:"1px dashed #111",borderBottom:"1px dashed #111",margin:"16px 0",padding:"10px 0"}}>
         <div><b>Mesa:</b> {sale.table_name}</div>
         <div><b>Cliente:</b> {sale.customer_name}</div>
-        <div><b>Data:</b> {new Date(sale.created_at).toLocaleString("pt-BR")}</div>
+        <div><b>Data:</b> {new Date(sale.created_at).toLocaleString("es-UY")}</div>
         <div><b>Status:</b> {sale.status==="open"?"Aberta":sale.status==="completed"?"Paga":sale.status==="cancelled"?"Cancelada":"Estornada"}</div>
       </div>
 

@@ -59,7 +59,7 @@ export default function Clientes(){
     <div className="section">
       <input placeholder="Buscar cliente..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:"100%",padding:12,border:"1px solid #ddd",borderRadius:9,marginBottom:12}}/>
       <table className="table"><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Cadastro</th><th></th></tr></thead><tbody>
-        {filtered.map(c=><tr key={c.id}><td><b>{c.name}</b>{c.notes&&<div className="subtitle">{c.notes}</div>}</td><td>{c.phone||"—"}</td><td>{c.email||"—"}</td><td>{new Date(c.created_at).toLocaleDateString("pt-BR")}</td><td><button onClick={()=>edit(c)}>Editar</button></td></tr>)}
+        {filtered.map(c=><tr key={c.id}><td><b>{c.name}</b>{c.notes&&<div className="subtitle">{c.notes}</div>}</td><td>{c.phone||"—"}</td><td>{c.email||"—"}</td><td>{new Date(c.created_at).toLocaleDateString("es-UY")}</td><td><button onClick={()=>edit(c)}>Editar</button></td></tr>)}
       </tbody></table>
     </div>
   </div>
