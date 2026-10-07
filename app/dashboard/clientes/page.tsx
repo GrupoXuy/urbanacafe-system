@@ -44,7 +44,14 @@ export default function Clientes(){
   const filtered=items.filter(c=>[c.name,c.phone||"",c.email||""].join(" ").toLowerCase().includes(search.toLowerCase()));
 
   return <div className="main">
-    <div className="topbar"><div><h1 className="title">Clientes</h1><p className="subtitle">CRM e histórico básico de relacionamento</p></div></div>
+    <section className="crm-branding">
+      <div className="crm-logo-panel"><img src="/urbanacafe-logo.svg" alt="Urbana Café y Resto" /></div>
+      <div className="crm-brand-copy">
+        <span className="crm-eyebrow">CRM · URBANA CAFÉ</span>
+        <h1 className="title">Relación con clientes</h1>
+        <p className="subtitle">Centralizá contactos, preferencias y el historial básico de atención de cada cliente.</p>
+      </div>
+    </section>
     <form className="card section" onSubmit={save}>
       <h2>{editing?"Editar cliente":"Novo cliente"}</h2>
       <div className="grid" style={{gridTemplateColumns:"repeat(3,minmax(0,1fr))"}}>
