@@ -81,7 +81,7 @@ export default function Vendas(){
             {sales.map(sale=>{
               const payment=sale.sale_payments?.[0];
               return <tr key={sale.id}>
-                <td>{new Date(sale.created_at).toLocaleString("pt-BR")}</td>
+                <td>{new Date(sale.created_at).toLocaleString("es-UY")}</td>
                 <td>{sale.customers?.[0]?.name||"Consumidor final"}</td>
                 <td>UYU {Number(sale.total).toFixed(2)}</td>
                 <td>{payment?methodLabel[payment.method]||payment.method:"—"}</td>
