@@ -7,6 +7,7 @@ type Category={id:string;name:string};
 
 export default function Produtos(){
   const [business,setBusiness]=useState("");
+  const [role,setRole]=useState("");
   const [products,setProducts]=useState<Product[]>([]);
   const [categories,setCategories]=useState<Category[]>([]);
   const [editing,setEditing]=useState<string|null>(null);
@@ -28,9 +29,10 @@ export default function Produtos(){
     const c=createClient();
     const {data:{user}}=await c.auth.getUser();
     if(!user)return;
-    const {data:m}=await c.from("business_memberships").select("business_id").eq("user_id",user.id).eq("active",true).limit(1).maybeSingle();
+    const {data:m}=await c.from("business_memberships").select("business_id,role").eq("user_id",user.id).eq("active",true).limit(1).maybeSingle();
     if(!m)return;
     setBusiness(m.business_id);
+    setRole(String(m.role||""));
     const [{data:p},{data:cats}]=await Promise.all([
       c.from("products").select("id,category_id,name,sku,unit,sale_price,average_cost,stock_quantity,min_stock,is_stock_item,is_sellable,active,production_station").eq("business_id",m.business_id).order("name"),
       c.from("categories").select("id,name").eq("business_id",m.business_id).eq("active",true).order("name")
@@ -38,6 +40,8 @@ export default function Produtos(){
     setProducts((p||[]) as Product[]);setCategories((cats||[]) as Category[]);
   }
   useEffect(()=>{load()},[]);
+
+  const canManage=role==="owner"||role==="manager";
 
   function reset(){
     setEditing(null);setName("");setSku("");setCategory("");setUnit("UN");setPrice("");setCost("");setMinStock("0");setStockItem(true);setSellable(true);setProductionStation("kitchen");
@@ -98,6 +102,7 @@ export default function Produtos(){
 
   return <div className="main">
     <div className="topbar"><div><h1 className="title">Produtos</h1><p className="subtitle">Catálogo, preços, custos e parâmetros de estoque</p></div></div>
+    {canManage ? <>
     <form className="card section" onSubmit={save}>
       <h2>{editing?"Editar produto":"Novo produto"}</h2>
       <div className="grid" style={{gridTemplateColumns:"repeat(4,minmax(0,1fr))"}}>
@@ -115,8 +120,10 @@ export default function Produtos(){
       <div style={{display:"flex",gap:10}}><button className="btn" style={{width:"auto"}} disabled={!business||saving}>{saving?"Salvando...":editing?"Salvar alterações":"Cadastrar produto"}</button>{editing&&<button type="button" className="btn" style={{width:"auto",background:"#666"}} onClick={reset}>Cancelar</button>}</div>
       {message&&<div className="notice">{message}</div>}
     </form>
+
+    </> : <div className="notice section">Modo de consulta: solo Propietario y Gerente pueden crear, editar, activar, desactivar o eliminar productos.</div>}
     <div className="section"><table className="table"><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Custo</th><th>Estoque</th><th>Produção</th><th>Status</th><th></th></tr></thead><tbody>
-      {products.map(p=><tr key={p.id}><td><b>{p.name}</b>{p.sku&&<div className="subtitle">{p.sku}</div>}</td><td>{categories.find(c=>c.id===p.category_id)?.name||"—"}</td><td>UYU {Number(p.sale_price).toFixed(2)}</td><td>UYU {Number(p.average_cost).toFixed(4)}</td><td>{p.stock_quantity} {p.unit}</td><td>{p.production_station==="kitchen"?"Cozinha":p.production_station==="bar"?"Bar":"Sem produção"}</td><td>{!p.active?"Inativo":Number(p.stock_quantity)<=Number(p.min_stock)?"Reposição":"Ativo"}</td><td><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+      {products.map(p=><tr key={p.id}><td><b>{p.name}</b>{p.sku&&<div className="subtitle">{p.sku}</div>}</td><td>{categories.find(c=>c.id===p.category_id)?.name||"—"}</td><td>UYU {Number(p.sale_price).toFixed(2)}</td><td>UYU {Number(p.average_cost).toFixed(4)}</td><td>{p.stock_quantity} {p.unit}</td><td>{p.production_station==="kitchen"?"Cozinha":p.production_station==="bar"?"Bar":"Sem produção"}</td><td>{!p.active?"Inativo":Number(p.stock_quantity)<=Number(p.min_stock)?"Reposição":"Ativo"}</td><td>{canManage&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         <button onClick={()=>edit(p)} disabled={deleting===p.id}>Editar</button>
         <button onClick={()=>toggle(p)} disabled={deleting===p.id}>{p.active?"Desactivar":"Activar"}</button>
         <button
@@ -126,7 +133,7 @@ export default function Produtos(){
         >
           {deleting===p.id?"Eliminando...":"Eliminar"}
         </button>
-      </div></td></tr>)}
+      </div>}</td></tr>)}
     </tbody></table></div>
   </div>
 }
